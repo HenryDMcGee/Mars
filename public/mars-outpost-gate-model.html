@@ -1,0 +1,2159 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<style>
+:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+body{margin:0;font:14px system-ui,-apple-system,"Segoe UI",sans-serif;background:#faf8f6}
+img{max-width:100%}
+[hidden]{display:none!important}
+</style>
+<title>Mars Outpost Gate Model</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+:root{
+  --bg:#f4f1ee; --surface:#fbfaf8; --surface-2:#efebe6; --inset:#e9e4de;
+  --ink:#17120f; --ink-2:#5c534d; --muted:#8b8078;
+  --rule:#e0d9d2; --rule-2:#ccc2b8;
+  --accent:#a33417; --accent-ink:#a33417; --accent-soft:rgba(163,52,23,.10);
+  --s1:#2a78d6; --s2:#eb6834; --s3:#1baf7a; --s4:#eda100;
+  --s5:#e87ba4; --s6:#008300; --s7:#4a3aa7; --s8:#e34948;
+  --good:#0ca30c; --warn:#fab219; --serious:#ec835a; --crit:#d03b3b;
+  --good-ink:#046004; --warn-ink:#7a5400; --crit-ink:#a32020;
+  --grid:#e6e0d9; --axis:#cdc3ba;
+  --shadow:0 1px 2px rgba(23,18,15,.05);
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){ :root:not([data-theme="light"]){
+  --bg:#100e0d; --surface:#1a1715; --surface-2:#221e1b; --inset:#262220;
+  --ink:#f7f3f0; --ink-2:#bdb2aa; --muted:#8b8078;
+  --rule:#2e2925; --rule-2:#403933;
+  --accent:#f0906a; --accent-ink:#f0906a; --accent-soft:rgba(240,144,106,.13);
+  --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500;
+  --s5:#d55181; --s6:#008300; --s7:#9085e9; --s8:#e66767;
+  --good-ink:#3cc23c; --warn-ink:#e0a010; --crit-ink:#e86a6a;
+  --grid:#282320; --axis:#3d3630;
+  --shadow:0 1px 2px rgba(0,0,0,.3);
+  color-scheme:dark;
+}}
+:root[data-theme="dark"]{
+  --bg:#100e0d; --surface:#1a1715; --surface-2:#221e1b; --inset:#262220;
+  --ink:#f7f3f0; --ink-2:#bdb2aa; --muted:#8b8078;
+  --rule:#2e2925; --rule-2:#403933;
+  --accent:#f0906a; --accent-ink:#f0906a; --accent-soft:rgba(240,144,106,.13);
+  --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500;
+  --s5:#d55181; --s6:#008300; --s7:#9085e9; --s8:#e66767;
+  --good-ink:#3cc23c; --warn-ink:#e0a010; --crit-ink:#e86a6a;
+  --grid:#282320; --axis:#3d3630;
+  --shadow:0 1px 2px rgba(0,0,0,.3);
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--bg); color:var(--ink);
+  font-family:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  font-size:14px; line-height:1.5; -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3,h4{font-family:"IBM Plex Sans Condensed","IBM Plex Sans",system-ui,sans-serif;font-weight:700;margin:0;text-wrap:balance;letter-spacing:-.005em}
+.mono,code{font-family:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace}
+.num{font-family:"IBM Plex Mono",ui-monospace,monospace;font-variant-numeric:tabular-nums}
+button{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:2px}
+
+/* ---------- shell ---------- */
+.wrap{max-width:1240px;margin:0 auto;padding-inline:16px}
+.topbar{
+  background:var(--surface);border-bottom:1px solid var(--rule);
+  position:sticky;top:env(safe-area-inset-top,0px);z-index:40;
+}
+.topbar .wrap{display:flex;flex-wrap:wrap;gap:16px 24px;align-items:flex-end;padding-block:14px 12px}
+.eyebrow{
+  font-family:"IBM Plex Mono",monospace;font-size:10px;font-weight:500;
+  letter-spacing:.14em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:3px
+}
+.topbar h1{font-size:19px;line-height:1.15}
+.topbar h1 .sub{color:var(--ink-2);font-weight:600}
+.chips{display:flex;flex-wrap:wrap;gap:0;margin-left:auto;border:1px solid var(--rule);border-radius:3px;overflow:hidden}
+.chip{padding:5px 12px;border-right:1px solid var(--rule);background:var(--surface-2);min-width:74px}
+.chip:last-child{border-right:0}
+.chip b{display:block;font-family:"IBM Plex Mono",monospace;font-variant-numeric:tabular-nums;font-size:14px;font-weight:600;line-height:1.25}
+.chip span{display:block;font-family:"IBM Plex Mono",monospace;font-size:9px;letter-spacing:.11em;text-transform:uppercase;color:var(--muted)}
+
+/* ---------- transfer window rail ---------- */
+.railwrap{background:var(--surface);border-bottom:1px solid var(--rule)}
+.railwrap .wrap{padding-block:0 14px}
+.railhead{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding-bottom:8px;flex-wrap:wrap}
+.railhead .note{font-size:11.5px;color:var(--muted)}
+.rail{display:flex;overflow-x:auto;gap:0;scrollbar-width:thin;padding-bottom:2px}
+.stop{
+  flex:1 0 76px;position:relative;padding-top:15px;text-align:center;
+  border:0;background:none;cursor:default;font-family:"IBM Plex Mono",monospace
+}
+.stop::before{content:"";position:absolute;top:5px;left:0;right:0;height:1px;background:var(--rule-2)}
+.stop:first-child::before{left:50%}
+.stop:last-child::before{right:50%}
+.stop::after{
+  content:"";position:absolute;top:1px;left:50%;transform:translateX(-50%);
+  width:9px;height:9px;border-radius:50%;background:var(--bg);border:1.5px solid var(--rule-2)
+}
+.stop.done::after{background:var(--ink-2);border-color:var(--ink-2)}
+.stop.now::after{background:var(--accent);border-color:var(--accent);width:11px;height:11px;top:0}
+.stop.crew::after{background:var(--s3);border-color:var(--s3)}
+.stop .yr{display:block;font-size:11.5px;font-weight:500;color:var(--muted);font-variant-numeric:tabular-nums}
+.stop.done .yr,.stop.crew .yr{color:var(--ink-2)}
+.stop.now .yr{color:var(--accent-ink);font-weight:600}
+.stop .tag{display:block;font-size:8.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);min-height:11px}
+.stop.crew .tag{color:var(--s3);font-weight:600}
+
+/* ---------- tabs ---------- */
+.tabbar{background:var(--bg);border-bottom:1px solid var(--rule);position:sticky;top:calc(env(safe-area-inset-top,0px));z-index:30}
+.tabbar .wrap{display:flex;gap:2px;overflow-x:auto}
+.tab{
+  background:none;border:0;border-bottom:2px solid transparent;padding:11px 14px;cursor:pointer;
+  font-family:"IBM Plex Sans Condensed",sans-serif;font-weight:600;font-size:14.5px;color:var(--muted);white-space:nowrap
+}
+.tab:hover{color:var(--ink-2)}
+.tab[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent)}
+.tab .n{font-family:"IBM Plex Mono",monospace;font-size:10px;color:var(--muted);margin-right:6px}
+
+main{padding-block:22px 40px}
+.panel{display:flex;flex-direction:column;gap:18px}
+.lede{max-width:66ch;color:var(--ink-2);font-size:14.5px}
+.lede b{color:var(--ink);font-weight:600}
+
+/* ---------- card ---------- */
+.card{background:var(--surface);border:1px solid var(--rule);border-radius:4px;box-shadow:var(--shadow)}
+.card>header{padding:12px 16px;border-bottom:1px solid var(--rule);display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap}
+.card>header h3{font-size:14.5px}
+.card>header .hint{font-size:11.5px;color:var(--muted);max-width:52ch}
+.card .body{padding:16px}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(330px,1fr));gap:18px;align-items:start}
+.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:18px;align-items:start}
+.split{display:grid;grid-template-columns:minmax(0,1fr);gap:18px;align-items:start}
+@media(min-width:1000px){.split{grid-template-columns:minmax(400px,480px) minmax(0,1fr)}}
+@media(min-width:1000px){.sticky-col{position:sticky;top:calc(env(safe-area-inset-top,0px) + 56px);max-height:calc(100vh - 78px);overflow-y:auto}}
+
+/* ---------- stat tiles ---------- */
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(148px,1fr));gap:1px;background:var(--rule)}
+.tile{background:var(--surface);padding:12px 14px}
+.tile .k{font-family:"IBM Plex Mono",monospace;font-size:9.5px;letter-spacing:.11em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:5px}
+.tile .v{font-size:23px;font-weight:600;line-height:1.05;letter-spacing:-.015em}
+.tile .v .u{font-size:12px;font-weight:500;color:var(--ink-2);margin-left:2px;letter-spacing:0}
+.tile .d{font-size:11.5px;color:var(--muted);margin-top:4px;line-height:1.35}
+.tile.alert .v{color:var(--crit-ink)}
+.tile.ok .v{color:var(--good-ink)}
+
+/* ---------- manifest ---------- */
+.capbar{height:22px;background:var(--inset);border:1px solid var(--rule);border-radius:3px;display:flex;overflow:hidden;margin:2px 0 6px}
+.capbar i{display:block;height:100%;border-right:2px solid var(--surface)}
+.caprow{display:flex;justify-content:space-between;font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums}
+.caprow .over{color:var(--crit-ink);font-weight:600}
+table.mf{width:100%;border-collapse:collapse;font-size:13px}
+table.mf th{text-align:left;font-family:"IBM Plex Mono",monospace;font-size:9.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);font-weight:500;padding:0 6px 6px;border-bottom:1px solid var(--rule)}
+table.mf th.r,table.mf td.r{text-align:right}
+table.mf td{padding:5px 6px;border-bottom:1px solid var(--rule);vertical-align:middle}
+table.mf tr:last-child td{border-bottom:0}
+table.mf .nm{font-weight:500;line-height:1.25}
+table.mf .why{display:block;font-size:10.5px;color:var(--muted);font-weight:400;line-height:1.3}
+table.mf td.r{font-family:"IBM Plex Mono",monospace;font-variant-numeric:tabular-nums;color:var(--ink-2);font-size:12px;white-space:nowrap}
+.stepper{display:inline-flex;align-items:center;border:1px solid var(--rule-2);border-radius:3px;overflow:hidden}
+.stepper button{width:22px;height:22px;border:0;background:var(--surface-2);cursor:pointer;line-height:1;font-size:14px;color:var(--ink-2);padding:0}
+.stepper button:hover:not(:disabled){background:var(--accent-soft);color:var(--accent-ink)}
+.stepper button:disabled{opacity:.35;cursor:not-allowed}
+.stepper .q{width:26px;text-align:center;font-family:"IBM Plex Mono",monospace;font-size:12.5px;font-variant-numeric:tabular-nums;font-weight:600}
+tr.has .nm{color:var(--ink)}
+tr.owned{opacity:.62}
+.pill{display:inline-block;font-family:"IBM Plex Mono",monospace;font-size:9px;letter-spacing:.07em;text-transform:uppercase;padding:1px 5px;border-radius:2px;border:1px solid var(--rule-2);color:var(--muted);margin-left:5px;vertical-align:1px}
+
+/* ---------- buttons ---------- */
+.btn{
+  border:1px solid var(--rule-2);background:var(--surface-2);border-radius:3px;padding:8px 14px;cursor:pointer;
+  font-family:"IBM Plex Sans Condensed",sans-serif;font-weight:600;font-size:13.5px
+}
+.btn:hover:not(:disabled){border-color:var(--ink-2)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+:root[data-theme="dark"] .btn.primary,
+.btn.primary{color:#fff}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .btn.primary{color:#1a1715}}
+:root[data-theme="dark"] .btn.primary{color:#1a1715}
+.btn.primary:hover:not(:disabled){filter:brightness(1.08)}
+.btn.sm{padding:5px 10px;font-size:12px}
+.btnrow{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+
+/* ---------- crew authorization ---------- */
+.authbox{border:1px solid var(--rule);border-radius:3px;padding:12px 14px;background:var(--surface-2)}
+.authbox.blocked{border-color:var(--crit);background:color-mix(in srgb,var(--crit) 7%,var(--surface))}
+.authbox.clear{border-color:var(--good);background:color-mix(in srgb,var(--good) 8%,var(--surface))}
+.authbox h4{font-size:13px;margin-bottom:4px}
+.authbox p{margin:0;font-size:12px;color:var(--ink-2)}
+.authbox label{display:flex;gap:8px;align-items:center;margin-top:9px;font-size:13px;font-weight:500;cursor:pointer}
+.authbox input[disabled]+span{color:var(--muted)}
+
+/* ---------- gates ---------- */
+.gate{border:1px solid var(--rule);border-radius:4px;background:var(--surface);overflow:hidden}
+.gate>hgroup{display:flex;gap:10px;align-items:flex-start;padding:11px 13px;border-bottom:1px solid var(--rule);background:var(--surface-2)}
+.gate .gid{font-family:"IBM Plex Mono",monospace;font-size:11px;font-weight:600;color:var(--muted);padding-top:1px}
+.gate h4{font-size:13.5px;line-height:1.25}
+.gate .step{font-size:10.5px;color:var(--muted);font-family:"IBM Plex Mono",monospace}
+.gate .st{margin-left:auto}
+.gate ul{list-style:none;margin:0;padding:6px 13px 10px}
+.gate li{display:flex;gap:8px;align-items:baseline;padding:4px 0;border-bottom:1px solid var(--rule);font-size:12.5px}
+.gate li:last-child{border-bottom:0}
+.gate li .c{flex:1;color:var(--ink-2);line-height:1.35}
+.gate li .val{font-family:"IBM Plex Mono",monospace;font-variant-numeric:tabular-nums;font-size:11.5px;white-space:nowrap}
+.mark{width:13px;flex:0 0 13px;font-size:12px;line-height:1.4;text-align:center;font-weight:700}
+.mark.p{color:var(--good-ink)}
+.mark.f{color:var(--crit-ink)}
+.status{
+  display:inline-flex;align-items:center;gap:5px;font-family:"IBM Plex Mono",monospace;font-size:9.5px;
+  letter-spacing:.09em;text-transform:uppercase;font-weight:600;padding:2px 7px;border-radius:2px;border:1px solid
+}
+.status::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
+.status.pass{color:var(--good-ink);border-color:color-mix(in srgb,var(--good) 45%,transparent);background:color-mix(in srgb,var(--good) 10%,transparent)}
+.status.hold{color:var(--warn-ink);border-color:color-mix(in srgb,var(--warn) 55%,transparent);background:color-mix(in srgb,var(--warn) 13%,transparent)}
+.status.fail{color:var(--crit-ink);border-color:color-mix(in srgb,var(--crit) 45%,transparent);background:color-mix(in srgb,var(--crit) 9%,transparent)}
+.status.na{color:var(--muted);border-color:var(--rule-2)}
+
+/* ---------- sliders ---------- */
+.ctrl{padding:9px 0;border-bottom:1px solid var(--rule)}
+.ctrl:last-child{border-bottom:0}
+.ctrl .lab{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:5px}
+.ctrl .lab span{font-size:12.5px;font-weight:500}
+.ctrl .lab b{font-family:"IBM Plex Mono",monospace;font-variant-numeric:tabular-nums;font-size:12.5px;font-weight:600;color:var(--accent-ink)}
+.ctrl .src{font-size:10.5px;color:var(--muted);line-height:1.35;margin-top:4px;display:block}
+input[type=range]{width:100%;accent-color:var(--accent);height:18px;margin:0}
+select{font:inherit;font-size:12.5px;padding:5px 7px;border:1px solid var(--rule-2);border-radius:3px;background:var(--surface);color:var(--ink);width:100%}
+
+/* ---------- charts ---------- */
+.chart{position:relative}
+.chart svg{display:block;width:100%;height:auto;overflow:visible}
+.legend{display:flex;flex-wrap:wrap;gap:4px 14px;padding-bottom:9px}
+.legend i{display:inline-flex;align-items:center;gap:6px;font-style:normal;font-size:11.5px;color:var(--ink-2)}
+.legend i::before{content:"";width:10px;height:3px;border-radius:2px;background:var(--c)}
+.legend i.sq::before{width:9px;height:9px;border-radius:2px}
+.tip{
+  position:absolute;pointer-events:none;background:var(--surface);border:1px solid var(--rule-2);
+  border-radius:3px;padding:7px 9px;font-size:11.5px;box-shadow:0 3px 10px rgba(0,0,0,.14);z-index:5;
+  min-width:118px;opacity:0;transition:opacity .09s
+}
+.tip.on{opacity:1}
+.tip .t{font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
+.tip .r{display:flex;justify-content:space-between;gap:14px;align-items:center;padding:1.5px 0}
+.tip .r span{display:flex;align-items:center;gap:6px;color:var(--ink-2)}
+.tip .r span::before{content:"";width:8px;height:8px;border-radius:2px;background:var(--c);flex:0 0 8px}
+.tip .r b{font-family:"IBM Plex Mono",monospace;font-variant-numeric:tabular-nums;font-weight:600}
+.dv{display:flex;justify-content:flex-end;padding-top:7px}
+.lnk{background:none;border:0;padding:0;font-size:11px;color:var(--muted);cursor:pointer;text-decoration:underline;text-underline-offset:2px;font-family:"IBM Plex Mono",monospace}
+.lnk:hover{color:var(--accent-ink)}
+table.dt{width:100%;border-collapse:collapse;font-size:11.5px;margin-top:8px;font-family:"IBM Plex Mono",monospace;font-variant-numeric:tabular-nums}
+table.dt th{text-align:right;padding:3px 6px;border-bottom:1px solid var(--rule-2);color:var(--muted);font-weight:500;font-size:10px;letter-spacing:.06em;text-transform:uppercase}
+table.dt th:first-child,table.dt td:first-child{text-align:left}
+table.dt td{padding:3px 6px;border-bottom:1px solid var(--rule);color:var(--ink-2)}
+.scroller{overflow-x:auto}
+
+/* ---------- orbital view ---------- */
+.orbview{position:relative;width:100%;aspect-ratio:16/10;min-height:230px;max-height:400px;
+  border:1px solid var(--rule);border-radius:3px;overflow:hidden;background:var(--surface-2);cursor:grab}
+.orbview.drag{cursor:grabbing}
+.orbview canvas,.orbview svg{display:block;width:100%;height:100%}
+.orbview .hintline{position:absolute;left:10px;bottom:8px;font-family:"IBM Plex Mono",monospace;
+  font-size:9.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);pointer-events:none}
+.orbview .scalebar{position:absolute;right:10px;bottom:8px;font-family:"IBM Plex Mono",monospace;
+  font-size:9.5px;color:var(--muted);pointer-events:none;display:flex;align-items:center;gap:6px}
+.orbview .scalebar i{display:block;height:1px;background:var(--rule-2);width:44px}
+.winpick{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:12px}
+.winpick button{border:1px solid var(--rule-2);background:var(--surface-2);border-radius:3px;
+  padding:4px 8px;cursor:pointer;font-family:"IBM Plex Mono",monospace;font-size:11px;
+  font-variant-numeric:tabular-nums;color:var(--ink-2);line-height:1.3}
+.winpick button:hover{border-color:var(--ink-2)}
+.winpick button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .winpick button[aria-pressed="true"]{color:#1a1715}}
+:root[data-theme="dark"] .winpick button[aria-pressed="true"]{color:#1a1715}
+
+/* ---------- log ---------- */
+.log{max-height:290px;overflow-y:auto;font-family:"IBM Plex Mono",monospace;font-size:11.5px}
+.log .ev{display:flex;gap:10px;padding:5px 0;border-bottom:1px solid var(--rule);align-items:baseline}
+.log .ev:last-child{border-bottom:0}
+.log .w{color:var(--muted);flex:0 0 46px;font-variant-numeric:tabular-nums}
+.log .m{flex:1;color:var(--ink-2);line-height:1.4;font-family:"IBM Plex Sans",sans-serif;font-size:12.5px}
+.log .ev.bad .m{color:var(--crit-ink)}
+.log .ev.good .m{color:var(--good-ink)}
+.log .ev.head .m{color:var(--ink);font-weight:600}
+
+/* ---------- risk register ---------- */
+.rr{width:100%;border-collapse:collapse;font-size:12.5px}
+.rr th{text-align:left;font-family:"IBM Plex Mono",monospace;font-size:9.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);font-weight:500;padding:0 8px 7px;border-bottom:1px solid var(--rule-2);white-space:nowrap}
+.rr td{padding:8px;border-bottom:1px solid var(--rule);vertical-align:top;line-height:1.4}
+.rr tr:last-child td{border-bottom:0}
+.rr .id{font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--muted)}
+.rr .own{font-size:11.5px;color:var(--ink-2);white-space:nowrap}
+.rr .sc{font-family:"IBM Plex Mono",monospace;font-variant-numeric:tabular-nums;text-align:center;font-weight:600;font-size:12px}
+.heat{display:inline-block;min-width:26px;padding:2px 5px;border-radius:2px;text-align:center}
+
+/* ---------- misc ---------- */
+.kv{display:grid;grid-template-columns:1fr auto;gap:3px 14px;font-size:12.5px}
+.kv dt{color:var(--ink-2)}
+.kv dd{margin:0;font-family:"IBM Plex Mono",monospace;font-variant-numeric:tabular-nums;text-align:right;font-weight:500}
+.kv .sep{grid-column:1/-1;border-top:1px solid var(--rule);margin:4px 0 2px}
+.note{font-size:11.5px;color:var(--muted);line-height:1.45}
+.callout{border-left:2px solid var(--accent);padding:2px 0 2px 12px;font-size:12.5px;color:var(--ink-2);line-height:1.5}
+.callout b{color:var(--ink)}
+footer{border-top:1px solid var(--rule);margin-top:10px;padding-block:20px 8px;font-size:11.5px;color:var(--muted)}
+footer h4{font-size:11px;font-family:"IBM Plex Mono",monospace;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;font-weight:500}
+footer ol{margin:0;padding-left:18px;columns:2;column-gap:32px}
+@media(max-width:640px){footer ol{columns:1}}
+footer li{margin-bottom:5px;break-inside:avoid;line-height:1.4}
+footer a{color:var(--ink-2)}
+.themebtn{border:1px solid var(--rule-2);background:var(--surface-2);border-radius:3px;width:28px;height:28px;cursor:pointer;font-size:13px;line-height:1;padding:0}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+
+</head>
+<body>
+<header class="topbar">
+  <div class="wrap">
+    <div class="brand">
+      <span class="eyebrow">Phased investment &amp; operating plan · working model</span>
+      <h1>Mars Outpost Gate Model <span class="sub">— minimum viable outpost</span></h1>
+    </div>
+    <div class="chips" id="chips"></div>
+    <button class="themebtn" id="themeBtn" title="Switch theme" aria-label="Switch theme">◐</button>
+  </div>
+</header>
+
+<div class="railwrap">
+  <div class="wrap">
+    <div class="railhead">
+      <span class="eyebrow">Transfer opportunities — minimum-energy departures, solved from the orbits</span>
+      <span class="note" id="railNote"></span>
+    </div>
+    <div class="rail" id="rail"></div>
+  </div>
+</div>
+
+<nav class="tabbar">
+  <div class="wrap" role="tablist" aria-label="Model views">
+    <button class="tab" role="tab" id="tab-sim" aria-controls="panel-sim" aria-selected="true"><span class="n">01</span>Mission simulation</button>
+    <button class="tab" role="tab" id="tab-model" aria-controls="panel-model" aria-selected="false"><span class="n">02</span>Investment model</button>
+    <button class="tab" role="tab" id="tab-dash" aria-controls="panel-dash" aria-selected="false"><span class="n">03</span>Control dashboard</button>
+  </div>
+</nav>
+
+<main class="wrap">
+
+<!-- ============ 01 SIMULATION ============ -->
+<section class="panel" id="panel-sim" role="tabpanel" aria-labelledby="tab-sim">
+  <p class="lede">You are the sponsor. Each transfer window you fund a number of landers, fill their manifest, and commit. The window resolves against entry-descent-landing odds, dust storms and equipment failure. <b>Crew departure stays locked until gates G1–G5 all pass</b> — the model will not let you authorize it early.</p>
+
+  <div class="card"><div class="tiles" id="simTiles"></div></div>
+
+  <div class="split">
+    <div style="display:flex;flex-direction:column;gap:18px">
+      <div class="card">
+        <header>
+          <h3>Manifest — <span id="mfWindow" class="mono">Window 5 · 2039</span></h3>
+          <span class="hint">Mass drives lander count; lander count drives flight cost.</span>
+        </header>
+        <div class="body">
+          <div class="ctrl" style="padding-top:0">
+            <div class="lab"><span>Cargo landers funded this window</span><b id="landerVal">0</b></div>
+            <input type="range" id="landers" min="0" max="12" step="1" value="0" aria-label="Cargo landers funded this window">
+          </div>
+          <div style="margin:12px 0 4px">
+            <div class="capbar" id="capbar"></div>
+            <div class="caprow"><span id="capUsed">0.0 t manifested</span><span id="capTot">0 t capacity</span></div>
+          </div>
+          <div class="scroller"><table class="mf" id="mfTable"></table></div>
+          <dl class="kv" style="margin-top:14px">
+            <dt>Hardware</dt><dd id="cHw">$0</dd>
+            <dt>Flights</dt><dd id="cFl">$0</dd>
+            <dt>Integration &amp; ops overhead</dt><dd id="cOv">$0</dd>
+            <dt>Architecture development (scheduled)</dt><dd id="cNre">$0</dd>
+            <div class="sep"></div>
+            <dt><b>Commitment this window</b></dt><dd id="cTot"><b>$0</b></dd>
+            <dt>Funds available</dt><dd id="cAvail">$0</dd>
+          </dl>
+          <div class="authbox" id="authBox" style="margin-top:14px"></div>
+          <div class="btnrow" style="margin-top:14px">
+            <button class="btn primary" id="commitBtn">Commit window &amp; resolve</button>
+            <button class="btn" id="autoBtn">Auto-fill from plan</button>
+            <button class="btn" id="resetBtn">Reset program</button>
+          </div>
+          <label class="note" style="display:flex;gap:8px;align-items:center;margin-top:10px">
+            <span>Run seed</span>
+            <input type="number" id="seed" value="7" min="1" max="9999" style="width:66px;font-family:'IBM Plex Mono',monospace;font-size:12px;padding:3px 5px;border:1px solid var(--rule-2);border-radius:3px;background:var(--surface);color:var(--ink)">
+            <span>— same seed reproduces the same run.</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="card">
+        <header><h3>Decision log</h3><span class="hint">Every resolved window, in order.</span></header>
+        <div class="body"><div class="log" id="log"></div></div>
+      </div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:18px">
+      <div class="card">
+        <header>
+          <h3>Transfer geometry</h3>
+          <span class="hint">Real orbits, real departure dates. Drag to turn the view.</span>
+        </header>
+        <div class="body">
+          <div class="winpick" id="winPick" role="group" aria-label="Choose a transfer window"></div>
+          <div class="legend" style="padding-bottom:9px">
+            <i class="sq" style="--c:var(--s1)">Earth at departure</i>
+            <i class="sq" style="--c:var(--s2)">Mars at arrival</i>
+            <i class="sq" style="--c:var(--s7)">Transfer trajectory</i>
+            <i class="sq" style="--c:var(--muted)">Faded = same planet at the other end of the trip</i>
+          </div>
+          <div id="orbView" class="orbview"></div>
+          <dl class="kv" id="orbStats" style="margin-top:14px"></dl>
+          <p class="callout" id="orbNote" style="margin-top:14px"></p>
+        </div>
+      </div>
+
+      <div class="card">
+        <header>
+          <h3>Surface power — capacity against demand</h3>
+          <span class="hint">The dashed band is capacity during a planet-encircling dust storm, when solar output collapses and fission does not.</span>
+        </header>
+        <div class="body"><div class="chart" id="chPower"></div></div>
+      </div>
+
+      <div class="card">
+        <header>
+          <h3>Consumables reserve, in sols of crew supply</h3>
+          <span class="hint">The readiness gate asks for 780 sols — one full missed resupply window.</span>
+        </header>
+        <div class="body"><div class="chart" id="chReserve"></div></div>
+      </div>
+
+      <div class="card">
+        <header>
+          <h3>Return propellant accumulation</h3>
+          <span class="hint">No crew departs until the ascent vehicle's tanks are full and verified on the surface.</span>
+        </header>
+        <div class="body"><div class="chart" id="chProp"></div></div>
+      </div>
+
+      <div class="card">
+        <header>
+          <h3>Landed mass by system</h3>
+          <span class="hint">Cumulative tonnes delivered and surviving on the surface.</span>
+        </header>
+        <div class="body"><div class="chart" id="chMass"></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 02 INVESTMENT MODEL ============ -->
+<section class="panel" id="panel-model" role="tabpanel" aria-labelledby="tab-model" hidden>
+  <p class="lede">The integrated resource and financial model behind the simulation. Move a driver and every figure on this page — and the next run of the simulation — moves with it. <b>Every constant is sourced;</b> the footnotes are numbered at the bottom of the page.</p>
+
+  <div class="card"><div class="tiles" id="modelTiles"></div></div>
+
+  <div class="split">
+    <div class="card sticky-col">
+      <header><h3>Drivers</h3><span class="hint">Defaults are the conservative case.</span></header>
+      <div class="body" id="sliders"></div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:18px">
+      <div class="card">
+        <header>
+          <h3>The in-situ oxygen problem, to scale</h3>
+          <span class="hint">MOXIE proved the chemistry at 12 grams an hour. This is the gap between that and an ascent vehicle.</span>
+        </header>
+        <div class="body"><div class="chart" id="chMoxie"></div></div>
+      </div>
+
+      <div class="card">
+        <header>
+          <h3>Sensitivity — what actually moves the cost to first crew return</h3>
+          <span class="hint">Each driver swung ±35% from its current value, all others held. Bars show the change in total program commitment.</span>
+        </header>
+        <div class="body"><div class="chart" id="chTornado"></div></div>
+      </div>
+
+      <div class="card">
+        <header>
+          <h3>Probabilistic run — 600 programs under the same policy</h3>
+          <span class="hint">Identical build plan, different luck: landing outcomes, dust storms, equipment failures.</span>
+        </header>
+        <div class="body">
+          <div id="mcStats" class="tiles" style="margin:-16px -16px 16px;border-top:0"></div>
+          <div class="chart" id="chMC"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <header><h3>Where the money goes, to first crew return</h3></header>
+        <div class="body"><div class="chart" id="chCost"></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 03 DASHBOARD ============ -->
+<section class="panel" id="panel-dash" role="tabpanel" aria-labelledby="tab-dash" hidden>
+  <p class="lede">The sponsor's review pack. Gates map one-to-one onto the six steps of the plan; each carries measurable criteria rather than a judgement call. <b>Investment releases only against demonstrated readiness.</b></p>
+
+  <div class="card">
+    <header><h3>Programme charter</h3><span class="hint">Step 1. Until this is baselined, nothing downstream can pass.</span></header>
+    <div class="body">
+      <div class="grid3" id="charterCtl"></div>
+      <div class="btnrow" style="margin-top:14px">
+        <button class="btn" id="charterBtn">Baseline charter</button>
+        <span class="note" id="charterState">Not baselined.</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <header><h3>Programme monitors</h3><span class="hint">Power, consumables, reliability and expenditure — reviewed each window.</span></header>
+    <div class="body"><div class="grid2" id="monitors" style="gap:1px;background:var(--rule);border:1px solid var(--rule);border-radius:3px;overflow:hidden;grid-template-columns:repeat(auto-fit,minmax(240px,1fr))"></div></div>
+  </div>
+
+  <div>
+    <h2 style="font-size:16px;margin-bottom:12px">Decision gates</h2>
+    <div class="grid2" id="gates"></div>
+  </div>
+
+  <div class="card">
+    <header>
+      <h3>Risk register</h3>
+      <span class="hint">Likelihood × impact on a 1–5 scale. Live scores fall as the simulation retires each uncertainty.</span>
+    </header>
+    <div class="body"><div class="scroller"><table class="rr" id="riskTable"></table></div></div>
+  </div>
+</section>
+
+<footer class="wrap">
+  <h4>Sources for every constant in the model</h4>
+  <ol id="refs"></ol>
+  <p style="margin-top:14px;max-width:70ch">Cost figures are order-of-magnitude parameters for testing the decision logic, not a bid estimate. Architecture development cost is a placeholder informed by comparable flagship aerospace programmes and is the single largest and least certain input — the sensitivity chart is the honest answer to how much weight it carries.</p>
+</footer>
+</main>
+<script>
+"use strict";
+/* ============================================================
+   ORBITAL MECHANICS
+   Planet positions from JPL's approximate Keplerian elements
+   (valid 1800-2050). The ten departure opportunities below were
+   found by a Lambert porkchop scan over departure date and time
+   of flight, minimising total v-infinity; the solver is validated
+   against Vallado Example 7-5 to six decimal places.
+   ============================================================ */
+const AU_KM = 1.495978707e8, MU_SUN = 1.32712440018e11, DEG = Math.PI/180;
+const AUD_KMS = AU_KM/86400;
+
+const ELEMENTS = {
+ earth:{a:1.00000261,e:0.01671123,i:-0.00001531,L:100.46457166,lp:102.93768193,node:0,
+        da:0.00000562,de:-0.00004392,di:-0.01294668,dL:35999.37244981,dlp:0.32327364,dnode:0},
+ mars: {a:1.52371034,e:0.09339410,i:1.84969142,L:-4.55343205,lp:-23.94362959,node:49.55953891,
+        da:0.00001847,de:0.00007882,di:-0.00813131,dL:19140.30268499,dlp:0.44441088,dnode:-0.29257343}
+};
+const wrap180 = d=>{d%=360; if(d>180)d-=360; if(d<-180)d+=360; return d;};
+
+function planetState(key,jd){
+ const E0=ELEMENTS[key], T=(jd-2451545.0)/36525;
+ const a=E0.a+E0.da*T, e=E0.e+E0.de*T, inc=(E0.i+E0.di*T)*DEG;
+ const L=E0.L+E0.dL*T, lp=E0.lp+E0.dlp*T, node=(E0.node+E0.dnode*T)*DEG;
+ const argp=lp*DEG-node;
+ const M=wrap180(L-lp)*DEG;
+ let E=M+e*Math.sin(M);
+ for(let k=0;k<12;k++){ const d=(M-(E-e*Math.sin(E)))/(1-e*Math.cos(E)); E+=d; if(Math.abs(d)<1e-12)break; }
+ const xp=a*(Math.cos(E)-e), yp=a*Math.sqrt(1-e*e)*Math.sin(E);
+ const cw=Math.cos(argp),sw=Math.sin(argp),cO=Math.cos(node),sO=Math.sin(node),ci=Math.cos(inc),si=Math.sin(inc);
+ return [(cw*cO-sw*sO*ci)*xp+(-sw*cO-cw*sO*ci)*yp,
+         (cw*sO+sw*cO*ci)*xp+(-sw*sO+cw*cO*ci)*yp,
+         (sw*si)*xp+(cw*si)*yp];
+}
+function planetVel(key,jd,h=0.25){
+ const p=planetState(key,jd+h), m=planetState(key,jd-h);
+ return [(p[0]-m[0])/(2*h),(p[1]-m[1])/(2*h),(p[2]-m[2])/(2*h)];
+}
+const vdot=(a,b)=>a[0]*b[0]+a[1]*b[1]+a[2]*b[2];
+const vnrm=a=>Math.sqrt(vdot(a,a));
+const vcrs=(a,b)=>[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]];
+const vsub=(a,b)=>[a[0]-b[0],a[1]-b[1],a[2]-b[2]];
+
+function stumpff(psi){
+ if(psi>1e-6){const s=Math.sqrt(psi);return[(1-Math.cos(s))/psi,(s-Math.sin(s))/Math.sqrt(psi*psi*psi)];}
+ if(psi<-1e-6){const s=Math.sqrt(-psi);return[(1-Math.cosh(s))/psi,(Math.sinh(s)-s)/Math.sqrt(-psi*psi*psi)];}
+ return [0.5,1/6];
+}
+function lambert(r1,r2,dt,mu){
+ const R1=vnrm(r1),R2=vnrm(r2);
+ const cosd=Math.max(-1,Math.min(1,vdot(r1,r2)/(R1*R2)));
+ let dnu=Math.acos(cosd); if(vcrs(r1,r2)[2]<0) dnu=2*Math.PI-dnu;
+ const den=1-cosd; if(Math.abs(den)<1e-14) return null;
+ const A=Math.sin(dnu)*Math.sqrt(R1*R2/den); if(Math.abs(A)<1e-12) return null;
+ let psi=0,c2=0.5,c3=1/6,psiUp=4*Math.PI*Math.PI,psiLow=-4*Math.PI,y=0,dtN=0,ok=false;
+ for(let it=0;it<300;it++){
+  y=R1+R2+A*(psi*c3-1)/Math.sqrt(c2);
+  if(A>0&&y<0){let g=0; while(y<0&&g++<200){psiLow+=0.1;psi=(psiUp+psiLow)/2;[c2,c3]=stumpff(psi);
+    y=R1+R2+A*(psi*c3-1)/Math.sqrt(c2);}}
+  const chi=Math.sqrt(y/c2);
+  dtN=(chi*chi*chi*c3+A*Math.sqrt(y))/Math.sqrt(mu);
+  if(Math.abs(dtN-dt)<1e-4){ok=true;break;}
+  if(dtN<=dt)psiLow=psi; else psiUp=psi;
+  psi=(psiUp+psiLow)/2; [c2,c3]=stumpff(psi);
+ }
+ if(!ok||!isFinite(y)||y<=0) return null;
+ const f=1-y/R1,gdot=1-y/R2,g=A*Math.sqrt(y/mu);
+ if(Math.abs(g)<1e-12) return null;
+ return {v1:[(r2[0]-f*r1[0])/g,(r2[1]-f*r1[1])/g,(r2[2]-f*r1[2])/g],
+         v2:[(gdot*r2[0]-r1[0])/g,(gdot*r2[1]-r1[1])/g,(gdot*r2[2]-r1[2])/g]};
+}
+/* Two-body RK4 — reproduces the Lambert arc to within 0.1 km over a full transfer. */
+function propagate(r0,v0,dtSec,n){
+ let r=r0.slice(),v=v0.slice(); const h=dtSec/n, pts=[r.slice()];
+ const acc=p=>{const R=Math.hypot(p[0],p[1],p[2]),k=-MU_SUN/(R*R*R);return[p[0]*k,p[1]*k,p[2]*k];};
+ for(let i=0;i<n;i++){
+  const a1=acc(r);
+  const r2=r.map((c,j)=>c+v[j]*h/2), v2=v.map((c,j)=>c+a1[j]*h/2), a2=acc(r2);
+  const r3=r.map((c,j)=>c+v2[j]*h/2), v3=v.map((c,j)=>c+a2[j]*h/2), a3=acc(r3);
+  const r4=r.map((c,j)=>c+v3[j]*h),   v4=v.map((c,j)=>c+a3[j]*h),   a4=acc(r4);
+  r=r.map((c,j)=>c+h/6*(v[j]+2*v2[j]+2*v3[j]+v4[j]));
+  v=v.map((c,j)=>c+h/6*(a1[j]+2*a2[j]+2*a3[j]+a4[j]));
+  pts.push(r.slice());
+ }
+ return pts;
+}
+const jdToDate=jd=>new Date((jd-2440587.5)*86400000);
+const MONS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+function fmtMY(jd){const d=jdToDate(jd);return `${MONS[d.getUTCMonth()]} ${d.getUTCFullYear()}`;}
+function fmtDMY(jd){const d=jdToDate(jd);return `${d.getUTCDate()} ${MONS[d.getUTCMonth()]} ${d.getUTCFullYear()}`;}
+function phaseAngle(jd){
+ const e=planetState('earth',jd),m=planetState('mars',jd);
+ let d=(Math.atan2(m[1],m[0])-Math.atan2(e[1],e[0]))/DEG;
+ if(d>180)d-=360; if(d<-180)d+=360; return d;
+}
+
+/* Minimum-total-v-infinity departures, 2030-2050, from the porkchop scan. */
+const TRANSFER_WINDOWS = [
+ {jd:2462864.5,tof:285,c3:10.37,vinfA:3.53},
+ {jd:2463703.4,tof:198,c3: 8.99,vinfA:3.33},
+ {jd:2464505.4,tof:202,c3:10.34,vinfA:2.63},
+ {jd:2465291.3,tof:355,c3:16.12,vinfA:2.83},
+ {jd:2466053.3,tof:342,c3:12.50,vinfA:2.50},
+ {jd:2466813.2,tof:318,c3: 9.81,vinfA:2.48},
+ {jd:2467568.1,tof:305,c3: 8.97,vinfA:2.79},
+ {jd:2468328.1,tof:292,c3: 9.71,vinfA:3.30},
+ {jd:2469156.0,tof:200,c3:10.76,vinfA:3.67},
+ {jd:2469953.0,tof:205,c3: 8.04,vinfA:2.80}
+];
+TRANSFER_WINDOWS.forEach((w,i)=>{
+ w.n=i+1;
+ w.yr=jdToDate(w.jd).getUTCFullYear();
+ w.label=fmtMY(w.jd);
+ w.gapDays = i<TRANSFER_WINDOWS.length-1 ? TRANSFER_WINDOWS[i+1].jd-w.jd : 780;
+ w.phase=phaseAngle(w.jd);
+});
+const GAPS = TRANSFER_WINDOWS.slice(0,-1).map(w=>w.gapDays);
+const GAP_MEAN = GAPS.reduce((a,b)=>a+b,0)/GAPS.length;
+const GAP_MIN = Math.min(...GAPS), GAP_MAX = Math.max(...GAPS);
+const C3_MIN = Math.min(...TRANSFER_WINDOWS.map(w=>w.c3)), C3_MAX = Math.max(...TRANSFER_WINDOWS.map(w=>w.c3));
+
+/* Cached transfer trajectory for a window, in AU */
+const _traj = {};
+function transferPath(i){
+ if(_traj[i]) return _traj[i];
+ const w = TRANSFER_WINDOWS[i];
+ const r1 = planetState('earth',w.jd).map(v=>v*AU_KM);
+ const r2 = planetState('mars',w.jd+w.tof).map(v=>v*AU_KM);
+ const sol = lambert(r1,r2,w.tof*86400,MU_SUN);
+ if(!sol){ return _traj[i]=[]; }
+ const pts = propagate(r1,sol.v1,w.tof*86400,240).map(p=>p.map(v=>v/AU_KM));
+ return _traj[i]=pts;
+}
+function orbitPath(key,jd,n=400){
+ const per = key==='earth'?365.256:686.980, out=[];
+ for(let k=0;k<=n;k++) out.push(planetState(key, jd + per*k/n));
+ return out;
+}
+</script>
+<script>
+"use strict";
+/* ============================================================
+   CONSTANTS — every figure carries a footnote index into REFS
+   ============================================================ */
+const REFS = [
+ ['MOXIE flight results','NASA/JPL — MOXIE produced 122 g of oxygen total across 16 runs, peaking at 12 g/hr at ≥98% purity.','https://www.nasa.gov/missions/mars-2020-perseverance/perseverance-rover/nasas-oxygen-generating-experiment-moxie-completes-mars-mission/'],
+ ['ISS water recovery','NASA — 98% water recovery demonstrated on the ISS, June 2023.','https://www.nasa.gov/missions/station/iss-research/nasa-achieves-water-recovery-milestone-on-international-space-station/'],
+ ['Crew metabolic rates','NASA OCHMO ECLSS technical brief — 0.771 kg O₂/crew-day resting, +0.376 kg per 120-min exercise session; 3,035 kcal/day; 2.5 L/day minimum potable.','https://www.nasa.gov/wp-content/uploads/2023/07/eclss-technical-brief-ochmo.pdf'],
+ ['Mars surface power','NASA — a modest two-crew 30-day mission needs at least 10 kW; ISRU propellant manufacture adds "tens to hundreds" of kW. Solar flux at Mars is ~45% of Earth\'s.','https://www.nasa.gov/wp-content/uploads/2024/01/mars-surface-power-generation-challenges-and-considerations.pdf'],
+ ['Radiation dose','NASA/JPL RAD measurements — a 180/500/180-day Mars mission totals roughly 1 sievert, contributed about equally by outbound transit, surface stay and return.','https://www.jpl.nasa.gov/images/pia17601-radiation-exposure-comparisons-with-mars-trip-calculation/'],
+ ['Career dose limit','NASA OCHMO radiation brief — career effective dose limit 600 mSv; 250 mSv cap per solar particle event; ≥20 g/cm² Al shielding above 6 months, plus 10 cm water-equivalent storm shelter.','https://www.nasa.gov/wp-content/uploads/2023/03/radiation-protection-technical-brief-ochmo.pdf'],
+ ['Dust storms','NASA — planet-encircling dust storms occur roughly once every three Mars years (~5.5 Earth years) and last weeks to months; rovers have gone into survival mode for weeks.','https://www.nasa.gov/solar-system/the-fact-and-fiction-of-martian-dust-storms/'],
+ ['Transfer windows','The ten departure dates, times of flight and launch energies on this page are not quoted — they are solved here, by a Lambert porkchop scan over departure date and flight time, minimising total v-infinity. The mean gap comes out at 787 days (25.9 months), which is where "roughly every 26 months" comes from.','https://science.nasa.gov/mars/'],
+ ['Heavy-lift capacity','SpaceX Starship — published payload capability by block, and the multiple tanker flights required to refuel in low Earth orbit before a departure burn.','https://en.wikipedia.org/wiki/SpaceX_Starship'],
+ ['Planetary positions','JPL — Keplerian elements and per-century rates for the major planets, valid 1800–2050. The Lambert solver is validated against Vallado, <i>Fundamentals of Astrodynamics and Applications</i>, Example 7-5, matching to six decimal places.','https://ssd.jpl.nasa.gov/planets/approx_pos.html']
+];
+
+const SOL_HOURS = 24.66, SOL_DAYS = 1.027491;
+const NOMINAL_SOLS = 759;             // used for planning targets only
+const SURFACE_STAY_SOLS = 500;        // ref 5 reference mission
+
+const O2_PER_CREW_SOL   = 0.84;       // ref 3
+const WATER_PER_CREW_SOL= 26.0;       // full hygiene allocation
+const FOOD_PER_CREW_SOL = 1.80;       // ref 3, packaged incl. packaging
+const MOXIE_KG_SOL      = 12/1000*SOL_HOURS;   // ref 1 → 0.296 kg/sol
+
+const DOSE_TRANSIT_MSV  = 330;        // ref 5, each way
+const DOSE_SURF_MSV_SOL = 0.66;       // ref 5, 330 mSv / 500 sols
+const DOSE_CAREER_MSV   = 600;        // ref 6
+const SHIELD_SURFACE    = 0.35;       // regolith cover
+const SHIELD_TRANSIT    = 0.55;       // water-wall storm shelter
+
+const STORM_PER_YEAR    = 1/5.5;      // ref 7
+const STORM_SOLAR_FRAC  = 0.12;
+
+const MAV_PROP_T        = 25.0;       // ascent propellant load
+const MAV_OF_RATIO      = 3.5;        // O₂ : CH₄ by mass
+const MAV_O2_T          = MAV_PROP_T*MAV_OF_RATIO/(1+MAV_OF_RATIO);   // 19.44 t
+const MAV_CH4_T         = MAV_PROP_T-MAV_O2_T;                        // 5.56 t
+const H2O_PER_CH4       = 2.25;       // t water per t methane, Sabatier route
+
+/* Windows are the real computed departure opportunities, so their spacing varies
+   (755-839 days) exactly as the orbits dictate, rather than a flat 26 months. */
+const WINDOWS = TRANSFER_WINDOWS.map(w=>({
+ n:w.n, yr:w.yr, label:w.label, jd:w.jd, tof:w.tof, c3:w.c3, vinfA:w.vinfA, phase:w.phase,
+ days:w.gapDays, sols:Math.round(w.gapDays/SOL_DAYS), years:w.gapDays/365.25
+}));
+const NRE_SCHEDULE = [0.34,0.28,0.20,0.12,0.06,0,0,0,0,0];
+
+/* ---------- cargo catalogue ---------- */
+const CATALOG = [
+ {id:'probe', name:'Robotic precursor & site survey', mass:4,  cost:220, cls:'survey',
+  why:'Verifies landing ground, water signature and resource assay before anything else commits.'},
+ {id:'comms', name:'Comms & navigation relay',        mass:3,  cost:150, cls:'infra',
+  why:'Continuous surface-to-Earth link. Required before crew.'},
+ {id:'fsp',   name:'Fission surface power, 40 kWe',   mass:8,  cost:340, cls:'power',
+  why:'Output is indifferent to dust. The only supply you can count on in a storm.'},
+ {id:'solar', name:'Solar array field, 30 kWe',       mass:5,  cost:130, cls:'power',
+  why:'Cheap per kilowatt, but falls to a tenth of output in a planet-encircling storm.'},
+ {id:'hab',   name:'Habitat module, 4 crew',          mass:25, cost:780, cls:'hab',
+  why:'Pressurised volume. Sets the crew ceiling.'},
+ {id:'shield',name:'Regolith shielding rig',          mass:6,  cost:190, cls:'hab',
+  why:'Buries the habitat. Cuts surface dose by about two thirds.'},
+ {id:'transit',name:'Transit storm shelter (water wall)',mass:0,cost:520, cls:'hab',
+  why:'Fitted to the crew vehicle, not landed. Without it, transit dose alone breaks the career limit.'},
+ {id:'eclss', name:'Closed-loop life support module', mass:6,  cost:420, cls:'eclss',
+  why:'Raises water closure toward the 98% demonstrated on the ISS.'},
+ {id:'isru',  name:'ISRU oxygen plant',               mass:15, cost:610, cls:'isru',
+  why:'Oxygen from atmospheric CO₂ — overwhelmingly for propellant, not for breathing.'},
+ {id:'water', name:'Water extraction plant',          mass:12, cost:480, cls:'isru',
+  why:'Regolith water. Feeds both life-support makeup and methane synthesis.'},
+ {id:'prop',  name:'Methane synthesis plant',         mass:14, cost:560, cls:'isru',
+  why:'Sabatier reactor. Consumes local water at 2.25 t per tonne of methane.'},
+ {id:'green', name:'Greenhouse module',               mass:9,  cost:330, cls:'food',
+  why:'Covers roughly a third of a four-crew diet. The rest is still imported.'},
+ {id:'mav',   name:'Mars ascent vehicle',             mass:18, cost:1450,cls:'return',
+  why:'Lands empty and dry. Its tanks are filled by the plants above.'},
+ {id:'spares',name:'Spares & logistics package',      mass:10, cost:210, cls:'spares',
+  why:'Failed hardware is only repairable if the part is already on the surface.'},
+ {id:'cons',  name:'Consumables pallet',              mass:20, cost:60,  cls:'cons',
+  why:'Food, water and oxygen from Earth. 12 t food / 5 t water / 3 t oxygen.'}
+];
+const CAT = Object.fromEntries(CATALOG.map(c=>[c.id,c]));
+const ONE_OFF = new Set(['hab','shield','transit','mav','comms','green']);
+
+const CLS_COLOR = {survey:'--s7',infra:'--s5',power:'--s1',hab:'--s3',eclss:'--s4',
+  isru:'--s2',food:'--s6',return:'--s8',spares:'--s5',cons:'--s4'};
+const MASS_GROUPS = [
+ {k:'power', label:'Power',            c:'--s1', ids:['fsp','solar']},
+ {k:'hab',   label:'Habitat & shielding',c:'--s3',ids:['hab','shield']},
+ {k:'isru',  label:'ISRU plants',      c:'--s2', ids:['isru','water','prop']},
+ {k:'eclss', label:'Life support',     c:'--s4', ids:['eclss','green']},
+ {k:'return',label:'Return vehicle',   c:'--s8', ids:['mav']},
+ {k:'log',   label:'Spares & consumables',c:'--s5',ids:['spares','cons']},
+ {k:'other', label:'Survey & comms',   c:'--s7', ids:['probe','comms']}
+];
+
+/* ---------- tunable drivers ---------- */
+const DRIVERS = [
+ {id:'flightCost', label:'Cost per cargo lander flight', min:100,max:1500,step:25,val:400,
+  fmt:v=>'$'+v+'M', src:'Heavy-lift economics remain unproven at Mars-injection scale. [9]'},
+ {id:'payload',    label:'Payload delivered per lander', min:20,max:120,step:5,val:50,
+  fmt:v=>v+' t', src:'Published capability is to low Earth orbit; Mars surface delivery is far lower and needs orbital refuelling. [9]'},
+ {id:'edl',        label:'Entry, descent & landing success', min:0.70,max:0.99,step:0.01,val:0.88,
+  fmt:v=>(v*100).toFixed(0)+'%', src:'No payload above about one tonne has ever been landed on Mars.'},
+ {id:'isruScale',  label:'Oxygen plant output', min:5,max:60,step:1,val:25,
+  fmt:v=>v+' kg/sol', src:'MOXIE’s demonstrated peak is 0.30 kg/sol. [1]'},
+ {id:'closure',    label:'Water loop closure', min:0.85,max:0.98,step:0.005,val:0.96,
+  fmt:v=>(v*100).toFixed(1)+'%', src:'98% is the demonstrated ISS ceiling, in orbit, with resupply. [2]'},
+ {id:'failRate',   label:'Annual unit failure rate', min:0.02,max:0.30,step:0.01,val:0.12,
+  fmt:v=>(v*100).toFixed(0)+'%', src:'No maintenance crew is present before first landing.'},
+ {id:'budget',     label:'Annual programme funding', min:3,max:24,step:0.5,val:9,
+  fmt:v=>'$'+v.toFixed(1)+'B/yr', src:'Unspent funds roll forward to the next window.'},
+ {id:'nre',        label:'Architecture development cost', min:15,max:90,step:2.5,val:45,
+  fmt:v=>'$'+v+'B', src:'Non-recurring engineering for transport, habitat, ISRU and ascent vehicle.'},
+ {id:'overhead',   label:'Integration & operations overhead', min:0.10,max:0.45,step:0.01,val:0.22,
+  fmt:v=>(v*100).toFixed(0)+'%', src:'Sponsor retains integration responsibility rather than delegating it.'},
+ {id:'contingency',label:'Contingency reserve held', min:0.10,max:0.50,step:0.01,val:0.25,
+  fmt:v=>(v*100).toFixed(0)+'%', src:'Informed by comparable aerospace programmes; held, not spent.'}
+];
+let P = Object.fromEntries(DRIVERS.map(d=>[d.id,d.val]));
+
+const CHARTER = {
+ endstate:{label:'Intended end state',opts:[['outpost','Earth-supported outpost'],['settlement','Permanent settlement'],['city','Self-sufficient city']],val:'outpost'},
+ crew:{label:'First crew size',opts:[['4','4 crew'],['6','6 crew'],['8','8 crew']],val:'4'},
+ risk:{label:'Accepted risk posture',opts:[['low','Conservative — full reserves'],['med','Balanced'],['high','Schedule-driven']],val:'low'}
+};
+
+/* ============================================================
+   SEEDED RNG
+   ============================================================ */
+function mulberry(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+
+/* ============================================================
+   STATE
+   ============================================================ */
+function blankState(){
+ return {
+  wi:0,                       // index of the window awaiting commitment
+  units:Object.fromEntries(CATALOG.map(c=>[c.id,0])),
+  funds:0, spent:0, committed:0,
+  o2Stock:0, waterStock:0, foodStock:0,      // kg on surface
+  propO2:0, propCh4:0,                        // tonnes in MAV tanks
+  sparesStock:0,                              // tonnes
+  crew:0, crewArrivedWi:null, crewDose:0, crewWindows:0, crewReturned:false,
+  landingsOk:0, landingsTried:0,
+  o2Demonstrated:0,                           // best sustained kg/sol achieved
+  charterBaselined:false, lastLost:[],
+  gateLog:{}, history:[], events:[], firstCrewWi:null, firstReturnWi:null,
+  breaches:0, propVerifiedWindows:0
+ };
+}
+let S = blankState();
+let manifest = Object.fromEntries(CATALOG.map(c=>[c.id,0]));
+let landers = 0, sendCrew = false;
+
+/* ---------- derived reads ---------- */
+const crewSize = ()=>parseInt(CHARTER.crew.val,10);
+
+function powerSupply(u,storm){
+ const solar = u.solar*30*(storm?STORM_SOLAR_FRAC:1);
+ return u.fsp*40 + solar;
+}
+function powerDemand(u,crew){
+ return (u.hab?12:0) + crew*2.5 + u.isru*30 + u.water*18 + u.prop*25 + u.green*12 + (u.comms?2:0) + u.eclss*3;
+}
+/* Loads that cannot be shed. The propellant chain can be throttled in a storm; life support cannot. */
+function lifeCriticalDemand(u,crew){
+ return (u.hab?12:0) + crew*2.5 + (u.comms?2:0) + u.green*12 + u.eclss*3;
+}
+function stormMargin(s,crew){
+ const lc=lifeCriticalDemand(s.units,crew);
+ return lc<=0?0:(powerSupply(s.units,true)-lc)/lc;
+}
+function closureOf(u){
+ // each ECLSS module closes 55% of the remaining gap to the ISS ceiling
+ let c = 0.80;
+ for(let i=0;i<u.eclss;i++) c += (P.closure-c)*0.55 + (0.98-0.98)*0;
+ return u.eclss? Math.min(P.closure, c + (P.closure-0.80)*0.25) : 0.55;
+}
+function doseProjection(u){
+ const st = u.transit?SHIELD_TRANSIT:1, ss = u.shield?SHIELD_SURFACE:1;
+ return 2*DOSE_TRANSIT_MSV*st + SURFACE_STAY_SOLS*DOSE_SURF_MSV_SOL*ss;
+}
+function reserveSols(s){
+ const c = crewSize();
+ const o2 = s.o2Stock/(O2_PER_CREW_SOL*c);
+ const cl = closureOf(s.units);
+ const makeup = WATER_PER_CREW_SOL*(1-cl)*c;
+ const wa = s.waterStock/Math.max(makeup,0.01);
+ const foodRate = FOOD_PER_CREW_SOL*c*(1-(s.units.green?0.33:0));
+ const fo = s.foodStock/Math.max(foodRate,0.01);
+ return {o2,water:wa,food:fo,min:Math.min(o2,wa,fo)};
+}
+function sparesCoverage(s){
+ const deployed = CATALOG.filter(c=>!['cons','spares','probe'].includes(c.id))
+   .reduce((a,c)=>a+c.mass*s.units[c.id],0);
+ const need = deployed*0.08;
+ return need<=0?1:Math.min(1.5, s.sparesStock/need);
+}
+/* Kilograms per crew-sol that still have to be shipped from Earth.
+   With no closure, no extraction and no ISRU the figure is the full gross demand. */
+const RESUPPLY_BASELINE = WATER_PER_CREW_SOL + FOOD_PER_CREW_SOL + O2_PER_CREW_SOL;  // 28.6 kg
+function earthResupply(s){
+ const u = s.units, cl = closureOf(u);
+ const water = u.water ? 0 : WATER_PER_CREW_SOL*(1-cl);
+ const food  = FOOD_PER_CREW_SOL*(1-(u.green?0.33:0));
+ const ox    = u.isru ? 0 : O2_PER_CREW_SOL;
+ return water + food + ox;
+}
+
+/* ============================================================
+   GATES
+   ============================================================ */
+function evalGates(s){
+ const u = s.units, c = crewSize(), res = reserveSols(s), sc = sparesCoverage(s);
+ const dem = powerDemand(u,c), margin = stormMargin(s,c);
+ const dose = doseProjection(u);
+ const propPct = MAV_O2_T<=0?0:Math.min(s.propO2/MAV_O2_T, s.propCh4/MAV_CH4_T);
+ const mavRate = MAV_O2_T*1000/480;   // kg/sol needed to fill in 480 sols
+
+ const g=[];
+ g.push({id:'G1',step:'Step 1 · Define success',title:'Charter baselined',
+  rows:[
+   ['Sponsor end state, crew size and risk posture agreed', s.charterBaselined?'Baselined':'Open', s.charterBaselined]
+  ]});
+
+ g.push({id:'G2',step:'Step 2 · Compare options',title:'Site & architecture baselined',
+  rows:[
+   ['Charter baselined', s.charterBaselined?'Baselined':'Open', s.charterBaselined],
+   ['Robotic precursors landed', `${u.probe} / 2`, u.probe>=2],
+   ['Comms relay on surface', u.comms?'Landed':'None', u.comms>=1]
+  ]});
+
+ g.push({id:'G3',step:'Step 3 · Prioritise uncertainties',title:'Critical uncertainties retired',
+  rows:[
+   ['Oxygen production demonstrated at ascent-fill rate',
+     `${s.o2Demonstrated.toFixed(0)} / ${mavRate.toFixed(0)} kg/sol`, s.o2Demonstrated>=mavRate],
+   ['Water loop closure', `${(closureOf(u)*100).toFixed(1)}% / 95.0%`, closureOf(u)>=0.95],
+   ['Successful landings accumulated', `${s.landingsOk} / 5`, s.landingsOk>=5],
+   ['Local water extraction operating', u.water?`${u.water} plant${u.water>1?'s':''}`:'None', u.water>=1]
+  ]});
+
+ g.push({id:'G4',step:'Step 4 · Sequence deployment',title:'Surface ready for crew',
+  rows:[
+   ['Habitat capacity', `${u.hab*4} / ${c} crew`, u.hab*4>=c],
+   ['Life-support power margin through a dust storm', `${(margin*100).toFixed(0)}% / 25%`, margin>=0.25],
+   ['Nominal capacity covers full load including plants', `${powerSupply(u,false).toFixed(0)} / ${dem.toFixed(0)} kWe`, powerSupply(u,false)>=dem],
+   ['Consumables reserve', `${Math.min(res.min,9999).toFixed(0)} / 780 sols`, res.min>=780],
+   ['Spares coverage', `${(sc*100).toFixed(0)}% / 80%`, sc>=0.80],
+   ['Projected mission dose vs career limit', `${dose.toFixed(0)} / ${DOSE_CAREER_MSV} mSv`, dose<=DOSE_CAREER_MSV]
+  ]});
+
+ g.push({id:'G5',step:'Step 5 · Establish controls',title:'Return capability verified',
+  rows:[
+   ['Ascent vehicle on surface', u.mav?'Landed':'None', u.mav>=1],
+   ['Ascent propellant stock', `${(propPct*100).toFixed(0)}% / 100%`, propPct>=1],
+   ['Held full through a review cycle', `${s.propVerifiedWindows} / 1 window`, s.propVerifiedWindows>=1]
+  ]});
+
+ const sustained = s.crewWindows;
+ g.push({id:'G6',step:'Step 6 · Deliver & review',title:'Expansion authorised',
+  rows:[
+   ['Crewed operations sustained', `${sustained} / 2 windows`, sustained>=2],
+   ['No critical reserve breach', `${s.breaches} breaches`, s.breaches===0 && sustained>=1],
+   [`Earth resupply per crew-sol (from ${RESUPPLY_BASELINE.toFixed(1)} kg unaided)`,
+    `${earthResupply(s).toFixed(2)} / 2.00 kg`, earthResupply(s)<=2.0]
+  ]});
+
+ g.forEach(x=>{
+   x.pass = x.rows.every(r=>r[2]);
+   x.met  = x.rows.filter(r=>r[2]).length;
+ });
+ // G2 inherits G1, etc. — a gate cannot pass ahead of the one before it
+ for(let i=1;i<g.length;i++) if(!g[i-1].pass) g[i].pass=false;
+ return g;
+}
+function crewAuthorised(s){
+ const g = evalGates(s);
+ return ['G1','G2','G3','G4','G5'].every(id=>g.find(x=>x.id===id).pass);
+}
+
+/* ============================================================
+   WINDOW RESOLUTION — pure given (state, manifest, landers, rng)
+   ============================================================ */
+function windowCost(mf,nLanders,wi){
+ const hw = CATALOG.reduce((a,c)=>a+c.cost*(mf[c.id]||0),0);
+ const fl = nLanders*P.flightCost;
+ const ov = (hw+fl)*P.overhead;
+ const nre = (NRE_SCHEDULE[wi]||0)*P.nre*1000;
+ return {hw,fl,ov,nre,total:hw+fl+ov+nre};
+}
+function manifestMass(mf){ return CATALOG.reduce((a,c)=>a+c.mass*(mf[c.id]||0),0); }
+
+function resolveWindow(s,mf,nLanders,withCrew,rng){
+ const ev=[]; const wi=s.wi, W=WINDOWS[wi];
+ const WSOLS=W.sols, WYEARS=W.years;
+ const cost = windowCost(mf,nLanders,wi);
+ s.funds -= cost.total; s.spent += cost.total;
+ ev.push(['head',`Window ${W.n} · ${W.yr} — committed $${(cost.total/1000).toFixed(2)}B across ${nLanders} lander${nLanders===1?'':'s'}`]);
+
+ /* --- entry, descent & landing --- */
+ const massList=[];
+ CATALOG.forEach(c=>{ for(let i=0;i<(mf[c.id]||0);i++) if(c.mass>0) massList.push(c.id); });
+ let lost=[], okL=0;
+ for(let i=0;i<nLanders;i++){ s.landingsTried++; if(rng()<P.edl){okL++; s.landingsOk++;} }
+ const lossFrac = nLanders? 1-okL/nLanders : 0;
+ if(lossFrac>0){
+   const nLose = Math.round(massList.length*lossFrac);
+   for(let i=0;i<nLose && massList.length;i++) lost.push(massList.splice(Math.floor(rng()*massList.length),1)[0]);
+ }
+ const landedMf = {};
+ massList.forEach(id=>landedMf[id]=(landedMf[id]||0)+1);
+ s.lastLost = lost.slice();   // destroyed hardware has to be re-ordered; it does not vanish from the plan
+ if(mf.transit) landedMf.transit=(landedMf.transit||0)+mf.transit;   // never lands
+ if(lost.length){
+   const names=[...new Set(lost)].map(id=>`${lost.filter(x=>x===id).length}× ${CAT[id].name.toLowerCase()}`);
+   ev.push(['bad',`${nLanders-okL} of ${nLanders} landers lost on entry. Cargo destroyed: ${names.join(', ')}.`]);
+ } else if(nLanders){ ev.push(['good',`All ${nLanders} landers down safely.`]); }
+
+ CATALOG.forEach(c=>{ s.units[c.id]+=(landedMf[c.id]||0); });
+ const pal = landedMf.cons||0;
+ s.foodStock += pal*12000; s.waterStock += pal*5000; s.o2Stock += pal*3000;
+ s.sparesStock += (landedMf.spares||0)*10;
+
+ /* --- crew departure --- */
+ if(withCrew && s.crew===0){
+   s.crew = crewSize(); s.crewArrivedWi = wi;
+   if(s.firstCrewWi===null) s.firstCrewWi = wi;
+   s.crewDose += DOSE_TRANSIT_MSV*(s.units.transit?SHIELD_TRANSIT:1);
+   ev.push(['good',`Crew of ${s.crew} authorised and departed. All five prior gates passed.`]);
+ }
+
+ /* --- dust storm --- */
+ const storm = rng() < STORM_PER_YEAR*WYEARS;
+ const stormSols = storm? Math.round(40+rng()*50) : 0;
+ if(storm) ev.push(['bad',`Planet-encircling dust storm, ${stormSols} sols. Solar output down to ${(STORM_SOLAR_FRAC*100)|0}%.`]);
+
+ /* --- equipment failures --- */
+ const sc = sparesCoverage(s);
+ const pFail = P.failRate*WYEARS*(1-0.6*Math.min(sc,1));
+ let failed=0, repaired=0;
+ ['fsp','solar','isru','water','prop','eclss','green'].forEach(id=>{
+   for(let i=0;i<s.units[id];i++){
+     if(rng()<pFail){
+       if(s.sparesStock>=2){ s.sparesStock-=2; repaired++; }
+       else { s.units[id]=Math.max(0,s.units[id]-1); failed++; }
+     }
+   }
+ });
+ if(repaired) ev.push(['','' + repaired + ` unit failure${repaired>1?'s':''} repaired from surface spares.`]);
+ if(failed)   ev.push(['bad',`${failed} unit${failed>1?'s':''} failed with no spare on hand and were written off.`]);
+
+ /* --- power-limited production over the window --- */
+ const u=s.units, crew=s.crew;
+ const dem = powerDemand(u,crew);
+ const thrNom = dem<=0?1:Math.min(1, powerSupply(u,false)/dem);
+ const thrStorm = dem<=0?1:Math.min(1, powerSupply(u,true)/dem);
+ const solsN = WSOLS-stormSols, solsS = stormSols;
+ const dutyAvg = (thrNom*solsN + thrStorm*solsS)/WSOLS;
+ if(dem>powerSupply(u,false) && u.isru) ev.push(['bad',`Power short of demand: plants throttled to ${(thrNom*100).toFixed(0)}% of rated output.`]);
+
+ const o2Rate = u.isru*P.isruScale*dutyAvg;                 // kg/sol
+ if(o2Rate>s.o2Demonstrated) s.o2Demonstrated = o2Rate;
+ const waterRate = u.water*20*dutyAvg;                      // kg/sol
+
+ /* --- consumption --- */
+ const cl = closureOf(u);
+ const o2Need    = crew*O2_PER_CREW_SOL*WSOLS;
+ const waterNeed = crew*WATER_PER_CREW_SOL*(1-cl)*WSOLS;
+ const foodNeed  = crew*FOOD_PER_CREW_SOL*(1-(u.green?0.33:0))*WSOLS;
+ const foodGrown = u.green? Math.min(foodNeed, crew*FOOD_PER_CREW_SOL*0.33*WSOLS*dutyAvg):0;
+
+ s.o2Stock    += o2Rate*WSOLS - o2Need;
+ s.waterStock += waterRate*WSOLS - waterNeed;
+ s.foodStock  += foodGrown - foodNeed;
+
+ /* --- propellant accumulation (surplus oxygen + local water → methane) --- */
+ if(u.mav){
+   const o2Surplus = Math.max(0, o2Rate*WSOLS - o2Need);
+   const fill = Math.min(MAV_O2_T - s.propO2, o2Surplus/1000);
+   s.propO2 += Math.max(0,fill); s.o2Stock -= Math.max(0,fill)*1000;
+   if(u.prop){
+     const ch4Cap = u.prop*0.012*WSOLS*dutyAvg;        // t per window at full duty
+     const waterAvail = Math.max(0, s.waterStock/1000 - 2);
+     const ch4 = Math.min(MAV_CH4_T - s.propCh4, ch4Cap, waterAvail/H2O_PER_CH4);
+     if(ch4>0){ s.propCh4 += ch4; s.waterStock -= ch4*H2O_PER_CH4*1000; }
+   }
+ }
+ const propPct = Math.min(s.propO2/MAV_O2_T, s.propCh4/MAV_CH4_T);
+ if(u.mav && propPct>=1) s.propVerifiedWindows++; else s.propVerifiedWindows=0;
+
+ /* --- crew outcomes --- */
+ if(s.crew>0){
+   s.crewWindows++;
+   s.crewDose += SURFACE_STAY_SOLS*DOSE_SURF_MSV_SOL*(u.shield?SHIELD_SURFACE:1);
+   const r = reserveSols(s);
+   if(s.o2Stock<0||s.foodStock<0||s.waterStock<0){
+     s.breaches++;
+     ev.push(['bad','Consumables exhausted with crew on the surface. Emergency return declared; expansion authority withdrawn.']);
+     s.o2Stock=Math.max(0,s.o2Stock); s.foodStock=Math.max(0,s.foodStock); s.waterStock=Math.max(0,s.waterStock);
+     s.crew=0;
+   } else if(r.min<200){
+     s.breaches++; ev.push(['bad',`Reserve fell to ${r.min.toFixed(0)} sols — below the abort threshold.`]);
+   }
+   if(s.crew>0 && s.crewWindows>=1 && propPct>=1 && s.firstReturnWi===null){
+     s.firstReturnWi = wi;
+     ev.push(['good',`Ascent vehicle fuelled. Crew return leg authorised; cumulative dose ${s.crewDose.toFixed(0)} mSv against a ${DOSE_CAREER_MSV} mSv career limit.`]);
+   }
+ }
+
+ s.o2Stock=Math.max(0,s.o2Stock); s.waterStock=Math.max(0,s.waterStock); s.foodStock=Math.max(0,s.foodStock);
+
+ /* --- record --- */
+ const res = reserveSols(s);
+ s.history.push({
+  wi, yr:W.yr, storm,
+  supply:powerSupply(s.units,false), supplyStorm:powerSupply(s.units,true),
+  demand:powerDemand(s.units,s.crew||crewSize()), lifeCrit:lifeCriticalDemand(s.units,s.crew||crewSize()),
+  o2Sols:Math.min(res.o2,4000), waterSols:Math.min(res.water,4000), foodSols:Math.min(res.food,4000),
+  propO2:s.propO2, propCh4:s.propCh4, propPct,
+  spend:s.spent, crew:s.crew, dose:s.crewDose,
+  mass:Object.fromEntries(MASS_GROUPS.map(g=>[g.k,g.ids.reduce((a,id)=>a+CAT[id].mass*s.units[id],0)])),
+  spares:sparesCoverage(s), o2Rate
+ });
+ ev.forEach(e=>s.events.push({w:W.yr,kind:e[0],msg:e[1]}));
+ s.wi++;
+ s.funds += P.budget*1000*WYEARS;
+ return s;
+}
+
+/* ============================================================
+   AUTO-PILOT — the baseline plan, used for load state, sensitivity and Monte Carlo
+   ============================================================ */
+/* The baseline plan is a POLICY, not a shopping list: each window it re-reads the
+   gates and orders whatever is still missing. Hardware lost on entry or written off
+   after a failure therefore gets re-ordered, exactly as a real programme would. */
+const PRIORITY=['probe','comms','fsp','isru','water','eclss','hab','prop','shield','transit','mav','spares','cons','solar','green'];
+
+function targetUnits(s){
+ const c=crewSize(), mavRate=MAV_O2_T*1000/480;
+ const t=Object.fromEntries(CATALOG.map(x=>[x.id,0]));
+ t.probe=2; t.comms=1; t.hab=Math.ceil(c/4); t.shield=1; t.transit=1; t.mav=1; t.prop=1; t.green=1; t.solar=1;
+ t.isru = Math.max(1, Math.ceil(mavRate/Math.max(P.isruScale,1)));
+ const waterDraw = WATER_PER_CREW_SOL*(1-P.closure)*c + MAV_CH4_T*1000*H2O_PER_CH4/NOMINAL_SOLS;
+ t.water = Math.max(1, Math.ceil(waterDraw/20)+1);
+ let e=1; while(closureOf({eclss:e})<0.95 && e<4) e++;
+ t.eclss=e;
+ let f=1; while(f<14){
+   const test={...t,fsp:f};
+   const lc=lifeCriticalDemand(test,c);
+   if((powerSupply(test,true)-lc)/Math.max(lc,1)>=0.25 && powerSupply(test,false)>=powerDemand(test,c)) break;
+   f++;
+ }
+ t.fsp=f;
+ return t;
+}
+function coverageFor(t,stock){
+ const deployed=CATALOG.filter(c=>!['cons','spares','probe'].includes(c.id)).reduce((a,c)=>a+c.mass*(t[c.id]||0),0);
+ const need=deployed*0.08; return need<=0?1:stock/need;
+}
+function reserveFor(s,food,water,o2){
+ const c=crewSize(), cl=closureOf(s.units);
+ const mk=Math.max(WATER_PER_CREW_SOL*(1-cl)*c,0.01);
+ const fr=Math.max(FOOD_PER_CREW_SOL*c*(1-(s.units.green?0.33:0)),0.01);
+ return Math.min(o2/(O2_PER_CREW_SOL*c), water/mk, food/fr);
+}
+function planDeficits(s){
+ const t=targetUnits(s), out=[];
+ PRIORITY.forEach(id=>{ for(let i=s.units[id];i<(t[id]||0);i++) out.push(id); });
+ let sp=s.sparesStock,g=0;
+ while(coverageFor(t,sp)<1.0 && g++<6){ out.push('spares'); sp+=10; }
+ let fd=s.foodStock,wa=s.waterStock,ox=s.o2Stock,g2=0;
+ while(reserveFor(s,fd,wa,ox)<1000 && g2++<8){ out.push('cons'); fd+=12000; wa+=5000; ox+=3000; }
+ return out;
+}
+/* Funds available for discretionary purchase = accrued funding, less the development
+   bill already scheduled against this window, less the contingency held back. */
+function discretionary(s){
+ const nre=(NRE_SCHEDULE[s.wi]||0)*P.nre*1000;
+ return Math.max(0,(s.funds-nre))*(1-P.contingency);
+}
+function autoManifest(s){
+ const mf=Object.fromEntries(CATALOG.map(c=>[c.id,0]));
+ const queue=planDeficits(s);
+ let mass=0, hw=0;
+ const avail=discretionary(s);
+ for(const id of queue){
+   if(ONE_OFF.has(id) && (s.units[id]+mf[id])>=1) continue;
+   const m=mass+CAT[id].mass;
+   const nL=Math.ceil(m/P.payload);
+   const c=(hw+CAT[id].cost+nL*P.flightCost)*(1+P.overhead);
+   if(c>avail) break;
+   mf[id]++; mass=m; hw+=CAT[id].cost;
+ }
+ return {mf, landers:Math.ceil(mass/P.payload)};
+}
+function runProgram(seed,maxW){
+ const rng=mulberry(seed); const s=blankState();
+ s.charterBaselined=true; s.funds=P.budget*1000*WINDOWS[0].years;
+ const lim=maxW??WINDOWS.length;
+ while(s.wi<lim){
+   const {mf,landers:nL}=autoManifest(s);
+   const crew = s.crew===0 && crewAuthorised(s);
+   resolveWindow(s,mf,nL,crew,rng);
+   if(s.firstReturnWi!==null && maxW===undefined) break;
+ }
+ return s;
+}
+/* cost is returned in $M, the unit money() formats */
+function costToFirstReturn(seed){
+ const s=runProgram(seed);
+ return {cost:s.spent*(1+P.contingency), wi:s.firstReturnWi, crewWi:s.firstCrewWi};
+}
+</script>
+<script>
+"use strict";
+/* ============================================================
+   CHART TOOLKIT — hand-drawn SVG, hover layer, table twin
+   ============================================================ */
+const SVGNS='http://www.w3.org/2000/svg';
+const el=(t,a={})=>{const n=document.createElementNS(SVGNS,t);for(const k in a)n.setAttribute(k,a[k]);return n};
+const num=n=>n.toLocaleString('en-US',{maximumFractionDigits:0});
+const num1=n=>n.toLocaleString('en-US',{minimumFractionDigits:1,maximumFractionDigits:1});
+const money=m=>m>=1000?'$'+(m/1000).toFixed(m>=10000?0:1)+'B':'$'+Math.round(m)+'M';
+function niceMax(v){ if(v<=0)return 1; const e=Math.pow(10,Math.floor(Math.log10(v))); const f=v/e;
+ return (f<=1?1:f<=2?2:f<=5?5:10)*e; }
+/* Axis ticks carry only as many decimals as the step actually needs, so a max of 50
+   over four divisions reads 12.5 rather than a rounded-and-wrong 13. */
+function tickFmt(maxV,divs){
+ const step=maxV/divs;
+ const dec=Number.isInteger(step)?0:Number.isInteger(step*2)?1:2;
+ return v=>v.toLocaleString('en-US',{minimumFractionDigits:dec,maximumFractionDigits:dec});
+}
+
+function chartShell(host,{legend=[],table=null,h=190}){
+ host.innerHTML='';
+ if(legend.length){
+   const lg=document.createElement('div'); lg.className='legend';
+   legend.forEach(l=>{const i=document.createElement('i');i.style.setProperty('--c',`var(${l.c})`);
+     if(l.sq)i.className='sq'; i.textContent=l.label; lg.appendChild(i);});
+   host.appendChild(lg);
+ }
+ const box=document.createElement('div'); box.style.position='relative'; host.appendChild(box);
+ const tip=document.createElement('div'); tip.className='tip'; box.appendChild(tip);
+ if(table){
+   const row=document.createElement('div'); row.className='dv';
+   const b=document.createElement('button'); b.className='lnk'; b.textContent='Table view';
+   const wrapT=document.createElement('div'); wrapT.className='scroller'; wrapT.hidden=true; wrapT.innerHTML=table;
+   b.onclick=()=>{wrapT.hidden=!wrapT.hidden; b.textContent=wrapT.hidden?'Table view':'Hide table';};
+   row.appendChild(b); host.appendChild(row); host.appendChild(wrapT);
+ }
+ return {box,tip};
+}
+function showTip(tip,box,x,y,html){
+ tip.innerHTML=html; tip.classList.add('on');
+ const bw=box.clientWidth, tw=tip.offsetWidth||130;
+ let L=x+12; if(L+tw>bw) L=x-tw-12; if(L<0)L=0;
+ tip.style.left=L+'px'; tip.style.top=Math.max(0,y-10)+'px';
+}
+const hideTip=t=>t.classList.remove('on');
+
+/* ---------- multi-series line / area chart over windows ---------- */
+function lineChart(host,spec){
+ const {rows,series,yLabel,yMax,threshold,bands=[],fmt=num,h=200}=spec;
+ const legend=series.map(s=>({c:s.c,label:s.label}));
+ if(threshold) legend.push({c:'--muted',label:threshold.label});
+ const tbl=`<table class="dt"><thead><tr><th>Window</th>${series.map(s=>`<th>${s.label}</th>`).join('')}</tr></thead><tbody>`+
+   rows.map(r=>`<tr><td>${r.yr}</td>${series.map(s=>`<td>${fmt(r[s.k]??0)}</td>`).join('')}</tr>`).join('')+'</tbody></table>';
+ const {box,tip}=chartShell(host,{legend,table:tbl});
+ const W=720,H=h,PL=48,PR=58,PT=12,PB=26;
+ const svg=el('svg',{viewBox:`0 0 ${W} ${H}`,role:'img','aria-label':spec.aria||yLabel});
+ const iw=W-PL-PR, ih=H-PT-PB;
+ const maxV=yMax??niceMax(Math.max(threshold?threshold.v*1.15:0,...rows.flatMap(r=>series.map(s=>r[s.k]||0))));
+ const X=i=>rows.length<2?PL+iw/2:PL+i*iw/(rows.length-1);
+ const Y=v=>PT+ih-Math.max(0,Math.min(1,v/maxV))*ih;
+
+ const tf=tickFmt(maxV,4);
+ for(let t=0;t<=4;t++){ const v=maxV*t/4;
+   svg.appendChild(el('line',{x1:PL,x2:PL+iw,y1:Y(v),y2:Y(v),style:'stroke:var(--grid);stroke-width:1'}));
+   const tx=el('text',{x:PL-7,y:Y(v)+3.5,style:'fill:var(--muted);font-size:10px;text-anchor:end;font-family:"IBM Plex Mono",monospace'});
+   tx.textContent=tf(v); svg.appendChild(tx);
+ }
+ bands.forEach(b=>{ if(b.i==null)return;
+   svg.appendChild(el('rect',{x:X(b.i)-iw/(Math.max(rows.length-1,1))/2.6,y:PT,width:iw/(Math.max(rows.length-1,1))/1.3,height:ih,
+     style:'fill:var(--accent);opacity:.07'})); });
+ rows.forEach((r,i)=>{ const tx=el('text',{x:X(i),y:H-9,style:'fill:var(--muted);font-size:10px;text-anchor:middle;font-family:"IBM Plex Mono",monospace'});
+   tx.textContent=r.yr; svg.appendChild(tx); });
+ svg.appendChild(el('line',{x1:PL,x2:PL+iw,y1:PT+ih,y2:PT+ih,style:'stroke:var(--axis);stroke-width:1'}));
+
+ if(threshold){
+   svg.appendChild(el('line',{x1:PL,x2:PL+iw,y1:Y(threshold.v),y2:Y(threshold.v),
+     style:'stroke:var(--muted);stroke-width:1.5;stroke-dasharray:5 4;opacity:.8'}));
+   const t=el('text',{x:PL+iw+6,y:Y(threshold.v)+3.5,style:'fill:var(--muted);font-size:10px;font-family:"IBM Plex Mono",monospace'});
+   t.textContent=threshold.short??''; svg.appendChild(t);
+ }
+ series.forEach(s=>{
+   if(s.area){
+     const d=rows.map((r,i)=>`${i?'L':'M'}${X(i)},${Y(r[s.k]||0)}`).join(' ')+` L${X(rows.length-1)},${PT+ih} L${X(0)},${PT+ih} Z`;
+     svg.appendChild(el('path',{d,style:`fill:var(${s.c});opacity:.10`}));
+   }
+   const d=rows.map((r,i)=>`${i?'L':'M'}${X(i)},${Y(r[s.k]||0)}`).join(' ');
+   svg.appendChild(el('path',{d,style:`fill:none;stroke:var(${s.c});stroke-width:2;stroke-linejoin:round;stroke-linecap:round${s.dash?';stroke-dasharray:4 3':''}`}));
+   rows.forEach((r,i)=>{
+     svg.appendChild(el('circle',{cx:X(i),cy:Y(r[s.k]||0),r:3.2,style:`fill:var(${s.c});stroke:var(--surface);stroke-width:2`}));
+   });
+   const last=rows[rows.length-1];
+   if(last && s.labelEnd!==false){
+     const t=el('text',{x:X(rows.length-1)+8,y:Y(last[s.k]||0)+3.5,
+       style:`fill:var(${s.c});font-size:10.5px;font-weight:600;font-family:"IBM Plex Mono",monospace`});
+     t.textContent=fmt(last[s.k]||0); svg.appendChild(t);
+   }
+ });
+ const cross=el('line',{x1:0,x2:0,y1:PT,y2:PT+ih,style:'stroke:var(--ink-2);stroke-width:1;opacity:0'});
+ svg.appendChild(cross);
+ const hit=el('rect',{x:PL-10,y:PT,width:iw+20,height:ih,style:'fill:transparent'});
+ svg.appendChild(hit); box.appendChild(svg);
+ function at(e){
+   const b=svg.getBoundingClientRect(); const px=(e.clientX-b.left)/b.width*W;
+   let i=0,best=1e9; rows.forEach((r,k)=>{const d=Math.abs(X(k)-px); if(d<best){best=d;i=k}});
+   cross.setAttribute('x1',X(i)); cross.setAttribute('x2',X(i)); cross.style.opacity='.28';
+   const r=rows[i];
+   showTip(tip,box,X(i)/W*b.width,(Y(r[series[0].k]||0))/H*b.height,
+    `<div class="t">Window ${r.wi+1} · ${r.yr}${r.storm?' · dust storm':''}</div>`+
+    series.map(s=>`<div class="r"><span style="--c:var(${s.c})">${s.label}</span><b>${fmt(r[s.k]||0)}</b></div>`).join('')+
+    (threshold?`<div class="r"><span style="--c:var(--muted)">${threshold.short}</span><b>${fmt(threshold.v)}</b></div>`:''));
+ }
+ svg.addEventListener('mousemove',at);
+ svg.addEventListener('mouseleave',()=>{hideTip(tip);cross.style.opacity='0'});
+}
+
+/* ---------- stacked column chart ---------- */
+function stackChart(host,{rows,groups,fmt=num1,unit='t',h=200}){
+ const legend=groups.map(g=>({c:g.c,label:g.label,sq:true}));
+ const tbl=`<table class="dt"><thead><tr><th>Window</th>${groups.map(g=>`<th>${g.label}</th>`).join('')}<th>Total</th></tr></thead><tbody>`+
+  rows.map(r=>`<tr><td>${r.yr}</td>${groups.map(g=>`<td>${fmt(r.mass[g.k]||0)}</td>`).join('')}<td>${fmt(groups.reduce((a,g)=>a+(r.mass[g.k]||0),0))}</td></tr>`).join('')+'</tbody></table>';
+ const {box,tip}=chartShell(host,{legend,table:tbl});
+ const W=720,H=h,PL=48,PR=18,PT=12,PB=26;
+ const iw=W-PL-PR, ih=H-PT-PB;
+ const totals=rows.map(r=>groups.reduce((a,g)=>a+(r.mass[g.k]||0),0));
+ const maxV=niceMax(Math.max(1,...totals));
+ const bw=Math.min(46, iw/rows.length*0.62), step=iw/Math.max(rows.length,1);
+ const svg=el('svg',{viewBox:`0 0 ${W} ${H}`,role:'img','aria-label':'Landed mass by system'});
+ const tf=tickFmt(maxV,4);
+ for(let t=0;t<=4;t++){const v=maxV*t/4;const y=PT+ih-v/maxV*ih;
+  svg.appendChild(el('line',{x1:PL,x2:PL+iw,y1:y,y2:y,style:'stroke:var(--grid);stroke-width:1'}));
+  const tx=el('text',{x:PL-7,y:y+3.5,style:'fill:var(--muted);font-size:10px;text-anchor:end;font-family:"IBM Plex Mono",monospace'});
+  tx.textContent=tf(v); svg.appendChild(tx);}
+ rows.forEach((r,i)=>{
+  const cx=PL+step*i+step/2; let acc=0;
+  groups.forEach(g=>{
+    const v=r.mass[g.k]||0; if(v<=0)return;
+    const hgt=v/maxV*ih, y=PT+ih-(acc+v)/maxV*ih;
+    const rect=el('rect',{x:cx-bw/2,y,width:bw,height:Math.max(hgt-2,0.5),rx:1.5,style:`fill:var(${g.c})`});
+    rect.addEventListener('mousemove',e=>{const b=svg.getBoundingClientRect();
+      showTip(tip,box,(e.clientX-b.left),(y/H*b.height),
+       `<div class="t">${r.yr} · ${g.label}</div><div class="r"><span style="--c:var(${g.c})">Landed</span><b>${fmt(v)} ${unit}</b></div>`+
+       `<div class="r"><span style="--c:var(--muted)">Total</span><b>${fmt(totals[i])} ${unit}</b></div>`);});
+    rect.addEventListener('mouseleave',()=>hideTip(tip));
+    svg.appendChild(rect); acc+=v;
+  });
+  const tx=el('text',{x:cx,y:H-9,style:'fill:var(--muted);font-size:10px;text-anchor:middle;font-family:"IBM Plex Mono",monospace'});
+  tx.textContent=r.yr; svg.appendChild(tx);
+  if(totals[i]>0){const tt=el('text',{x:cx,y:PT+ih-totals[i]/maxV*ih-5,
+    style:'fill:var(--ink-2);font-size:10px;text-anchor:middle;font-weight:600;font-family:"IBM Plex Mono",monospace'});
+   tt.textContent=num(totals[i]); svg.appendChild(tt);}
+ });
+ svg.appendChild(el('line',{x1:PL,x2:PL+iw,y1:PT+ih,y2:PT+ih,style:'stroke:var(--axis);stroke-width:1'}));
+ box.appendChild(svg);
+}
+
+/* ---------- horizontal bar (log scale) ---------- */
+function scaleChart(host,{items,unit,h}){
+ const tbl=`<table class="dt"><thead><tr><th>Source</th><th>kg O₂ per sol</th><th>× MOXIE</th></tr></thead><tbody>`+
+  items.map(i=>`<tr><td>${i.label}</td><td>${i.v<1?i.v.toFixed(2):num1(i.v)}</td><td>${(i.v/MOXIE_KG_SOL).toFixed(i.v/MOXIE_KG_SOL<10?1:0)}×</td></tr>`).join('')+'</tbody></table>';
+ const {box,tip}=chartShell(host,{table:tbl});
+ const W=720,PL=176,PR=74,PT=8,rowH=34,H=PT+items.length*rowH+24;
+ const iw=W-PL-PR;
+ const lo=Math.log10(0.2), hi=Math.log10(Math.max(...items.map(i=>i.v))*1.5);
+ const X=v=>PL+(Math.log10(Math.max(v,0.2))-lo)/(hi-lo)*iw;
+ const svg=el('svg',{viewBox:`0 0 ${W} ${H}`,role:'img','aria-label':'Oxygen production rates on a logarithmic scale'});
+ [0.1,1,10,100].forEach(g=>{ if(g<0.2)return; const x=X(g);
+   svg.appendChild(el('line',{x1:x,x2:x,y1:PT,y2:PT+items.length*rowH,style:'stroke:var(--grid);stroke-width:1'}));
+   const t=el('text',{x,y:H-8,style:'fill:var(--muted);font-size:10px;text-anchor:middle;font-family:"IBM Plex Mono",monospace'});
+   t.textContent=g<1?g:num(g); svg.appendChild(t);});
+ const ax=el('text',{x:PL+iw/2,y:H-8,style:'fill:var(--muted);font-size:10px;text-anchor:middle;opacity:0'});svg.appendChild(ax);
+ items.forEach((it,i)=>{
+  const y=PT+i*rowH+rowH/2;
+  const lab=el('text',{x:PL-10,y:y+1,style:'fill:var(--ink-2);font-size:11.5px;text-anchor:end'});
+  lab.textContent=it.label; svg.appendChild(lab);
+  const sub=el('text',{x:PL-10,y:y+12,style:'fill:var(--muted);font-size:9.5px;text-anchor:end'});
+  sub.textContent=it.sub||''; svg.appendChild(sub);
+  const w=Math.max(X(it.v)-PL,2);
+  const r=el('rect',{x:PL,y:y-9,width:w,height:13,rx:2,style:`fill:var(${it.c})`});
+  r.addEventListener('mousemove',e=>{const b=svg.getBoundingClientRect();
+    showTip(tip,box,e.clientX-b.left,(y-9)/H*b.height,
+     `<div class="t">${it.label}</div><div class="r"><span style="--c:var(${it.c})">Rate</span><b>${it.v<1?it.v.toFixed(2):num1(it.v)} kg/sol</b></div>`+
+     `<div class="r"><span style="--c:var(--muted)">vs MOXIE</span><b>${(it.v/MOXIE_KG_SOL).toFixed(it.v/MOXIE_KG_SOL<10?1:0)}×</b></div>`);});
+  r.addEventListener('mouseleave',()=>hideTip(tip));
+  svg.appendChild(r);
+  const v=el('text',{x:PL+w+7,y:y+2,style:`fill:var(${it.c});font-size:11px;font-weight:600;font-family:"IBM Plex Mono",monospace`});
+  v.textContent=(it.v<1?it.v.toFixed(2):num1(it.v))+' kg/sol'; svg.appendChild(v);
+ });
+ box.appendChild(svg);
+}
+
+/* ---------- tornado (diverging) ---------- */
+function tornado(host,{items,base}){
+ const tbl=`<table class="dt"><thead><tr><th>Driver</th><th>−35%</th><th>+35%</th><th>Swing</th></tr></thead><tbody>`+
+  items.map(i=>`<tr><td>${i.label}</td><td>${money(i.lo)}</td><td>${money(i.hi)}</td><td>${money(Math.abs(i.hi-i.lo))}</td></tr>`).join('')+'</tbody></table>';
+ const {box,tip}=chartShell(host,{legend:[{c:'--s1',label:'Driver reduced 35%',sq:true},{c:'--s8',label:'Driver increased 35%',sq:true}],table:tbl});
+ const W=720,PL=248,PR=20,PT=10,rowH=30,H=PT+items.length*rowH+26;
+ const iw=W-PL-PR, cx=PL+iw/2;
+ const span=Math.max(...items.flatMap(i=>[Math.abs(i.lo-base),Math.abs(i.hi-base)]))*1.12||1;
+ const X=v=>cx+(v-base)/span*(iw/2);
+ const svg=el('svg',{viewBox:`0 0 ${W} ${H}`,role:'img','aria-label':'Sensitivity of programme cost to each driver'});
+ [-1,-.5,0,.5,1].forEach(f=>{ const x=cx+f*iw/2;
+   svg.appendChild(el('line',{x1:x,x2:x,y1:PT,y2:PT+items.length*rowH,style:`stroke:var(${f===0?'--axis':'--grid'});stroke-width:1`}));
+   const t=el('text',{x,y:H-9,style:'fill:var(--muted);font-size:10px;text-anchor:middle;font-family:"IBM Plex Mono",monospace'});
+   t.textContent=(f===0?'baseline '+money(base):(f>0?'+':'−')+money(Math.abs(f*span))); svg.appendChild(t);});
+ items.forEach((it,i)=>{
+  const y=PT+i*rowH+rowH/2;
+  const lab=el('text',{x:PL-12,y:y+4,style:'fill:var(--ink-2);font-size:11.5px;text-anchor:end'});
+  lab.textContent=it.label; svg.appendChild(lab);
+  [[it.lo,'--s1'],[it.hi,'--s8']].forEach(([v,c])=>{
+   const x1=Math.min(cx,X(v)), w=Math.abs(X(v)-cx);
+   if(w<0.6)return;
+   const r=el('rect',{x:x1,y:y-8,width:Math.max(w-1,1),height:16,rx:1.5,style:`fill:var(${c})`});
+   r.addEventListener('mousemove',e=>{const b=svg.getBoundingClientRect();
+     showTip(tip,box,e.clientX-b.left,(y-8)/H*b.height,
+      `<div class="t">${it.label}</div><div class="r"><span style="--c:var(${c})">${v<base?'Lower':'Higher'} case</span><b>${money(v)}</b></div>`+
+      `<div class="r"><span style="--c:var(--muted)">vs baseline</span><b>${(v>=base?'+':'−')+money(Math.abs(v-base))}</b></div>`);});
+   r.addEventListener('mouseleave',()=>hideTip(tip));
+   svg.appendChild(r);
+  });
+ });
+ box.appendChild(svg);
+}
+
+/* ---------- histogram ---------- */
+function histogram(host,{bins,labels,pcts,xTitle}){
+ const tbl=`<table class="dt"><thead><tr><th>${xTitle}</th><th>Programmes</th></tr></thead><tbody>`+
+  bins.map((b,i)=>`<tr><td>${labels[i]}</td><td>${b}</td></tr>`).join('')+'</tbody></table>';
+ const {box,tip}=chartShell(host,{table:tbl});
+ const W=720,H=180,PL=42,PR=14,PT=12,PB=34, iw=W-PL-PR, ih=H-PT-PB;
+ const maxV=niceMax(Math.max(1,...bins));
+ const step=iw/bins.length, bw=Math.min(step*0.78,44);
+ const svg=el('svg',{viewBox:`0 0 ${W} ${H}`,role:'img','aria-label':'Distribution across simulated programmes'});
+ const tf=tickFmt(maxV,4);
+ for(let t=0;t<=4;t++){const v=maxV*t/4,y=PT+ih-v/maxV*ih;
+  svg.appendChild(el('line',{x1:PL,x2:PL+iw,y1:y,y2:y,style:'stroke:var(--grid);stroke-width:1'}));
+  const tx=el('text',{x:PL-7,y:y+3.5,style:'fill:var(--muted);font-size:10px;text-anchor:end;font-family:"IBM Plex Mono",monospace'});
+  tx.textContent=tf(v);svg.appendChild(tx);}
+ bins.forEach((v,i)=>{
+  const x=PL+step*i+step/2, hgt=v/maxV*ih, y=PT+ih-hgt;
+  if(v>0){
+   const r=el('rect',{x:x-bw/2,y,width:bw,height:Math.max(hgt,1),rx:2,style:`fill:var(--s1)`});
+   r.addEventListener('mousemove',e=>{const b=svg.getBoundingClientRect();
+     showTip(tip,box,e.clientX-b.left,y/H*b.height,
+      `<div class="t">${labels[i]}</div><div class="r"><span style="--c:var(--s1)">Programmes</span><b>${v}</b></div>`+
+      `<div class="r"><span style="--c:var(--muted)">Share</span><b>${pcts[i]}%</b></div>`);});
+   r.addEventListener('mouseleave',()=>hideTip(tip));
+   svg.appendChild(r);
+   const t=el('text',{x,y:y-5,style:'fill:var(--ink-2);font-size:10px;text-anchor:middle;font-weight:600;font-family:"IBM Plex Mono",monospace'});
+   t.textContent=pcts[i]+'%'; svg.appendChild(t);
+  }
+  const tx=el('text',{x,y:H-18,style:'fill:var(--muted);font-size:10px;text-anchor:middle;font-family:"IBM Plex Mono",monospace'});
+  tx.textContent=labels[i]; svg.appendChild(tx);
+ });
+ svg.appendChild(el('line',{x1:PL,x2:PL+iw,y1:PT+ih,y2:PT+ih,style:'stroke:var(--axis);stroke-width:1'}));
+ const xt=el('text',{x:PL+iw/2,y:H-3,style:'fill:var(--muted);font-size:10px;text-anchor:middle'});
+ xt.textContent=xTitle; svg.appendChild(xt);
+ box.appendChild(svg);
+}
+
+/* ---------- single stacked cost bar ---------- */
+function costBar(host,{parts,total}){
+ const tbl=`<table class="dt"><thead><tr><th>Line</th><th>Amount</th><th>Share</th></tr></thead><tbody>`+
+  parts.map(p=>`<tr><td>${p.label}</td><td>${money(p.v)}</td><td>${(p.v/total*100).toFixed(1)}%</td></tr>`).join('')+
+  `<tr><td><b>Total commitment</b></td><td><b>${money(total)}</b></td><td>100%</td></tr></tbody></table>`;
+ const {box,tip}=chartShell(host,{legend:parts.map(p=>({c:p.c,label:p.label,sq:true})),table:tbl});
+ const W=720,H=64,PL=0,PR=0,PT=6,bh=34;
+ const svg=el('svg',{viewBox:`0 0 ${W} ${H}`,role:'img','aria-label':'Programme cost breakdown'});
+ let acc=0;
+ parts.forEach(p=>{
+  const w=p.v/total*W;
+  if(w<=0)return;
+  const r=el('rect',{x:acc,y:PT,width:Math.max(w-2,1),height:bh,rx:2,style:`fill:var(${p.c})`});
+  r.addEventListener('mousemove',e=>{const b=svg.getBoundingClientRect();
+    showTip(tip,box,e.clientX-b.left,PT/H*b.height,
+     `<div class="t">${p.label}</div><div class="r"><span style="--c:var(${p.c})">Amount</span><b>${money(p.v)}</b></div>`+
+     `<div class="r"><span style="--c:var(--muted)">Share</span><b>${(p.v/total*100).toFixed(1)}%</b></div>`);});
+  r.addEventListener('mouseleave',()=>hideTip(tip));
+  svg.appendChild(r);
+  if(w>62){const t=el('text',{x:acc+w/2-1,y:PT+bh+13,style:'fill:var(--muted);font-size:10px;text-anchor:middle;font-family:"IBM Plex Mono",monospace'});
+   t.textContent=(p.v/total*100).toFixed(0)+'%';svg.appendChild(t);}
+  acc+=w;
+ });
+ box.appendChild(svg);
+}
+
+/* ---------- sparkline for the monitor tiles ---------- */
+function spark(vals,c,thr){
+ if(!vals.length)return '';
+ const W=170,H=30,max=Math.max(...vals,thr??0)*1.1||1,min=0;
+ const X=i=>vals.length<2?W/2:i*W/(vals.length-1), Y=v=>H-2-(v-min)/(max-min)*(H-6);
+ const d=vals.map((v,i)=>`${i?'L':'M'}${X(i).toFixed(1)},${Y(v).toFixed(1)}`).join(' ');
+ const area=d+` L${X(vals.length-1).toFixed(1)},${H} L0,${H} Z`;
+ const t=thr!=null?`<line x1="0" x2="${W}" y1="${Y(thr).toFixed(1)}" y2="${Y(thr).toFixed(1)}" style="stroke:var(--muted);stroke-width:1;stroke-dasharray:3 3;opacity:.7"/>`:'';
+ return `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" style="width:100%;height:30px;display:block;margin-top:8px" aria-hidden="true">
+   <path d="${area}" style="fill:var(${c});opacity:.12"/>${t}<path d="${d}" style="fill:none;stroke:var(${c});stroke-width:1.8;stroke-linejoin:round"/>
+   <circle cx="${X(vals.length-1).toFixed(1)}" cy="${Y(vals[vals.length-1]).toFixed(1)}" r="2.6" style="fill:var(${c})"/></svg>`;
+}
+</script>
+<script>
+"use strict";
+/* ============================================================
+   UI
+   ============================================================ */
+const $=id=>document.getElementById(id);
+let seedVal=7;
+const BOOT_WINDOWS=2;
+
+/* ---------- bootstrap: load a baseline programme so the page opens working ---------- */
+function bootstrap(upTo=BOOT_WINDOWS){
+ S=blankState(); S.charterBaselined=true; S.funds=P.budget*1000*WINDOWS[0].years;
+ for(let k=0;k<upTo;k++){
+   const rng=mulberry(seedVal*1000+S.wi);
+   const {mf,landers:nL}=autoManifest(S);
+   resolveWindow(S,mf,nL,false,rng);
+ }
+ fillFromPlan();
+}
+function fillFromPlan(){
+ const {mf,landers:nL}=autoManifest(S);
+ manifest=mf; landers=nL;
+ sendCrew = crewAuthorised(S) && S.crew===0;
+}
+function clearManifest(){ manifest=Object.fromEntries(CATALOG.map(c=>[c.id,0])); landers=0; sendCrew=false; }
+
+/* ---------- tabs ---------- */
+const TABS=[['tab-sim','panel-sim'],['tab-model','panel-model'],['tab-dash','panel-dash']];
+TABS.forEach(([t,p])=>$(t).addEventListener('click',()=>{
+  TABS.forEach(([t2,p2])=>{$(t2).setAttribute('aria-selected',String(t2===t)); $(p2).hidden=(p2!==p);});
+  window.scrollTo({top:0,behavior:'instant'});
+}));
+
+/* ---------- theme ---------- */
+$('themeBtn').addEventListener('click',()=>{
+  const cur=document.documentElement.getAttribute('data-theme');
+  const dark=cur? cur==='dark' : matchMedia('(prefers-color-scheme:dark)').matches;
+  document.documentElement.setAttribute('data-theme',dark?'light':'dark');
+  try{localStorage.setItem('mgm-theme',dark?'light':'dark')}catch(e){}
+  renderAll();
+});
+try{const t=localStorage.getItem('mgm-theme'); if(t)document.documentElement.setAttribute('data-theme',t);}catch(e){}
+
+/* ============================================================
+   RENDER — header, rail
+   ============================================================ */
+function renderChips(){
+ const g=evalGates(S), passed=g.filter(x=>x.pass).length;
+ const mass=CATALOG.reduce((a,c)=>a+c.mass*S.units[c.id],0);
+ const W=WINDOWS[Math.min(S.wi,WINDOWS.length-1)];
+ const c=[
+  ['Window',S.wi>=WINDOWS.length?'closed':`${W.n} · ${W.yr}`],
+  ['Gates',`${passed} / 6`],
+  ['Crew',S.crew?`${S.crew} on surface`:'0'],
+  ['Landed',`${mass.toFixed(0)} t`],
+  ['Committed',money(S.spent)]
+ ];
+ $('chips').innerHTML=c.map(([k,v])=>`<div class="chip"><b>${v}</b><span>${k}</span></div>`).join('');
+}
+function renderRail(){
+ $('rail').innerHTML=WINDOWS.map((w,i)=>{
+  const done=i<S.wi, now=i===S.wi;
+  const crewHere=S.firstCrewWi===i;
+  const cls=['stop',done?'done':'',now?'now':'',crewHere?'crew':''].filter(Boolean).join(' ');
+  let tag='';
+  if(crewHere)tag='crew';
+  else if(S.firstReturnWi===i)tag='return';
+  else if(done && S.history[i] && S.history[i].storm)tag='storm';
+  else if(now)tag='next';
+  return `<div class="${cls}" title="Depart ${fmtDMY(w.jd)} · arrive ${fmtDMY(w.jd+w.tof)} · C₃ ${w.c3.toFixed(1)} km²/s²"><span class="yr">${w.label}</span><span class="tag">${tag}</span></div>`;
+ }).join('');
+ const rn=document.getElementById('railNote');
+ if(rn) rn.innerHTML=`Nothing ships between stops, and the gap is never the same twice — a slipped item waits <b class="mono">${Math.round(GAP_MIN)}–${Math.round(GAP_MAX)} days</b>.`;
+}
+
+/* ============================================================
+   RENDER — simulation tab
+   ============================================================ */
+function renderSimTiles(){
+ const u=S.units,c=crewSize(),res=reserveSols(S);
+ const dem=powerDemand(u,S.crew||c);
+ const margin=stormMargin(S,S.crew||c);
+ const propPct=Math.min(S.propO2/MAV_O2_T,S.propCh4/MAV_CH4_T);
+ const dose=doseProjection(u);
+ const mavRate=MAV_O2_T*1000/480;
+ const t=[
+  {k:'Life-support power margin, storm',v:(margin*100).toFixed(0),u:'%',d:`Needs +25% · ${u.fsp} fission, ${u.solar} solar · full load ${dem.toFixed(0)} kWe`,cls:margin>=0.25?'ok':'alert'},
+  {k:'Consumables reserve',v:res.min>3999?'3999+':res.min.toFixed(0),u:' sols',d:'Needs 780 — one missed window',cls:res.min>=780?'ok':'alert'},
+  {k:'O₂ rate demonstrated',v:S.o2Demonstrated.toFixed(0),u:' kg/sol',d:`Needs ${mavRate.toFixed(0)} to fill the ascent vehicle`,cls:S.o2Demonstrated>=mavRate?'ok':'alert'},
+  {k:'Ascent propellant',v:(Math.max(0,propPct)*100).toFixed(0),u:'%',d:u.mav?`${S.propO2.toFixed(1)} t O₂ · ${S.propCh4.toFixed(1)} t CH₄`:'No ascent vehicle landed',cls:propPct>=1?'ok':'alert'},
+  {k:'Projected crew dose',v:dose.toFixed(0),u:' mSv',d:`Career limit ${DOSE_CAREER_MSV} mSv`,cls:dose<=DOSE_CAREER_MSV?'ok':'alert'},
+  {k:'Funds available',v:money(discretionary(S)),u:'',d:`After scheduled development spend; ${(P.contingency*100).toFixed(0)}% held in reserve`,cls:''}
+ ];
+ $('simTiles').innerHTML=t.map(x=>`<div class="tile ${x.cls}"><span class="k">${x.k}</span><div class="v">${x.v}<span class="u">${x.u}</span></div><div class="d">${x.d}</div></div>`).join('');
+}
+
+function renderManifest(){
+ const closed=S.wi>=WINDOWS.length;
+ const W=WINDOWS[Math.min(S.wi,WINDOWS.length-1)];
+ $('mfWindow').textContent=closed?'Programme closed':`Window ${W.n} · ${W.yr}`;
+ $('landers').value=landers; $('landerVal').textContent=landers;
+ const cap=landers*P.payload, used=manifestMass(manifest);
+ const over=used>cap;
+ $('capUsed').innerHTML=`${num1(used)} t manifested` + (over?` <b class="over">— ${num1(used-cap)} t over</b>`:'');
+ $('capTot').textContent=`${num(cap)} t capacity · ${landers} lander${landers===1?'':'s'}`;
+ const segs=MASS_GROUPS.map(g=>{
+   const v=g.ids.reduce((a,id)=>a+CAT[id].mass*(manifest[id]||0),0);
+   return v>0?`<i style="width:${(v/Math.max(cap,used,1)*100).toFixed(2)}%;background:var(${g.c})" title="${g.label}"></i>`:'';
+ }).join('');
+ $('capbar').innerHTML=segs;
+
+ $('mfTable').innerHTML=
+  `<thead><tr><th>System</th><th class="r">Mass</th><th class="r">Cost</th><th class="r">Have</th><th class="r">Add</th></tr></thead><tbody>`+
+  CATALOG.map(c=>{
+   const q=manifest[c.id]||0, have=S.units[c.id];
+   const maxed=ONE_OFF.has(c.id)&&(have+q)>=1;
+   return `<tr class="${q>0?'has':''} ${have>0&&ONE_OFF.has(c.id)?'owned':''}">
+    <td><span class="nm">${c.name}${have>0?`<span class="pill">${have} on surface</span>`:''}</span><span class="why">${c.why}</span></td>
+    <td class="r">${c.mass?num1(c.mass)+' t':'—'}</td>
+    <td class="r">$${num(c.cost)}M</td>
+    <td class="r">${have}</td>
+    <td class="r"><span class="stepper">
+      <button data-dec="${c.id}" ${q<=0||closed?'disabled':''} aria-label="Remove one ${c.name}">−</button>
+      <span class="q">${q}</span>
+      <button data-inc="${c.id}" ${maxed||closed?'disabled':''} aria-label="Add one ${c.name}">+</button></span></td></tr>`;
+  }).join('')+'</tbody>';
+
+ const cost=windowCost(manifest,landers,Math.min(S.wi,WINDOWS.length-1));
+ $('cHw').textContent=money(cost.hw); $('cFl').textContent=money(cost.fl);
+ $('cOv').textContent=money(cost.ov); $('cNre').textContent=money(cost.nre);
+ const avail=discretionary(S), disc=cost.hw+cost.fl+cost.ov;
+ $('cTot').innerHTML=`<b>${money(cost.total)}</b>`;
+ $('cAvail').innerHTML=disc>avail?`<span style="color:var(--crit-ink)">${money(avail)} — short ${money(disc-avail)}</span>`:money(avail);
+
+ /* crew authorisation */
+ const g=evalGates(S), blocking=['G1','G2','G3','G4','G5'].filter(id=>!g.find(x=>x.id===id).pass);
+ const ok=blocking.length===0, box=$('authBox');
+ if(S.crew>0){
+  box.className='authbox clear';
+  box.innerHTML=`<h4>Crew of ${S.crew} on the surface</h4><p>Cumulative dose ${S.crewDose.toFixed(0)} mSv of a ${DOSE_CAREER_MSV} mSv career limit. ${S.crewWindows} window${S.crewWindows===1?'':'s'} of crewed operations recorded.</p>`;
+ } else if(ok){
+  box.className='authbox clear';
+  box.innerHTML=`<h4>Crew departure authorised</h4><p>All five prior gates pass. Surface systems, emergency reserves and the fuelled return vehicle have been verified.</p>
+   <label><input type="checkbox" id="crewChk" ${sendCrew?'checked':''}><span>Send crew of ${crewSize()} this window</span></label>`;
+  const chk=$('crewChk'); if(chk)chk.addEventListener('change',e=>{sendCrew=e.target.checked;});
+ } else {
+  box.className='authbox blocked';
+  box.innerHTML=`<h4>Crew departure locked</h4><p>${blocking.length} gate${blocking.length===1?'':'s'} outstanding — ${blocking.join(', ')}. Cargo may still fly.</p>
+   <label><input type="checkbox" disabled><span>Send crew of ${crewSize()} this window</span></label>`;
+ }
+ $('commitBtn').disabled = closed || over || disc>avail;
+ $('commitBtn').textContent = closed?'Programme closed':'Commit window & resolve';
+}
+
+$('mfTable').addEventListener('click',e=>{
+ const inc=e.target.closest('[data-inc]'), dec=e.target.closest('[data-dec]');
+ if(inc){const id=inc.dataset.inc; manifest[id]=(manifest[id]||0)+1;
+   landers=Math.max(landers,Math.ceil(manifestMass(manifest)/P.payload)); renderSim();}
+ if(dec){const id=dec.dataset.dec; manifest[id]=Math.max(0,(manifest[id]||0)-1); renderSim();}
+});
+$('landers').addEventListener('input',e=>{landers=+e.target.value; renderSim();});
+$('seed').addEventListener('change',e=>{seedVal=Math.max(1,+e.target.value||1); bootstrap(); renderAll();});
+$('autoBtn').addEventListener('click',()=>{fillFromPlan(); renderSim();});
+$('resetBtn').addEventListener('click',()=>{bootstrap(0); renderAll();});
+$('commitBtn').addEventListener('click',()=>{
+ if(S.wi>=WINDOWS.length)return;
+ const rng=mulberry(seedVal*1000+S.wi);
+ resolveWindow(S,manifest,landers,sendCrew&&crewAuthorised(S),rng);
+ clearManifest(); fillFromPlan(); renderAll();
+ $('log').scrollTop=$('log').scrollHeight;
+});
+
+function renderLog(){
+ $('log').innerHTML = S.events.length? S.events.map(e=>
+   `<div class="ev ${e.kind}"><span class="w">${e.w}</span><span class="m">${e.msg}</span></div>`).join('')
+  : '<p class="note">No windows resolved yet. Fill a manifest and commit.</p>';
+}
+
+function renderSimCharts(){
+ const rows=S.history;
+ if(!rows.length){['chPower','chReserve','chProp','chMass'].forEach(id=>$(id).innerHTML='<p class="note">Commit a window to populate.</p>');return;}
+ lineChart($('chPower'),{rows,h:200,fmt:v=>num(v),
+  series:[{k:'demand',label:'Demand at full duty',c:'--s1'},
+          {k:'supply',label:'Capacity, clear sky',c:'--s2',area:true},
+          {k:'supplyStorm',label:'Capacity in a dust storm',c:'--s8',dash:true}],
+  aria:'Surface power capacity against demand, kilowatts electric'});
+ lineChart($('chReserve'),{rows,h:200,fmt:v=>num(v),threshold:{v:780,label:'Gate threshold — 780 sols',short:'gate 780'},
+  series:[{k:'o2Sols',label:'Oxygen',c:'--s1'},{k:'waterSols',label:'Water',c:'--s2'},{k:'foodSols',label:'Food',c:'--s3'}],
+  aria:'Consumables reserve in sols of crew supply'});
+ lineChart($('chProp'),{rows,h:170,fmt:v=>num1(v),threshold:{v:MAV_O2_T,label:`Oxygen required — ${num1(MAV_O2_T)} t`,short:num1(MAV_O2_T)+' t'},
+  series:[{k:'propO2',label:'Oxygen in tanks',c:'--s2',area:true},{k:'propCh4',label:'Methane in tanks',c:'--s7'}],
+  aria:'Ascent propellant accumulated, tonnes'});
+ stackChart($('chMass'),{rows,groups:MASS_GROUPS,h:200});
+}
+function renderSim(){renderChips();renderRail();renderSimTiles();renderManifest();}
+
+/* ============================================================
+   RENDER — investment model tab
+   ============================================================ */
+function renderSliders(){
+ $('sliders').innerHTML=DRIVERS.map(d=>`
+  <div class="ctrl">
+   <div class="lab"><span>${d.label}</span><b id="v-${d.id}">${d.fmt(P[d.id])}</b></div>
+   <input type="range" id="d-${d.id}" min="${d.min}" max="${d.max}" step="${d.step}" value="${P[d.id]}" aria-label="${d.label}">
+   <span class="src">${d.src}</span>
+  </div>`).join('')
+  +`<div class="btnrow" style="margin-top:12px"><button class="btn sm" id="resetDrivers">Restore defaults</button></div>`;
+ DRIVERS.forEach(d=>{
+  $('d-'+d.id).addEventListener('input',e=>{
+    P[d.id]=+e.target.value; $('v-'+d.id).textContent=d.fmt(P[d.id]);
+    clearTimeout(window.__dt); window.__dt=setTimeout(()=>{bootstrap();renderAll();},180);
+  });
+ });
+ $('resetDrivers').addEventListener('click',()=>{
+  DRIVERS.forEach(d=>P[d.id]=d.val); bootstrap(); renderAll();
+ });
+}
+
+function modelDerived(){
+ const c=crewSize();
+ const mavRate=MAV_O2_T*1000/480;
+ const plant=P.isruScale;
+ const crewO2=O2_PER_CREW_SOL*c;
+ const base=costToFirstReturn(seedVal);
+ return {mavRate,plant,crewO2,base};
+}
+function renderModelTiles(){
+ const d=modelDerived(), c=crewSize();
+ const plantsNeeded=Math.ceil(d.mavRate/Math.max(d.plant,0.01));
+ const totalWithCont=d.base.cost;
+ const crewSols=SURFACE_STAY_SOLS*c;
+ const t=[
+  {k:'Scale-up required of MOXIE',v:(d.mavRate/MOXIE_KG_SOL).toFixed(0),u:'×',d:`From 0.30 to ${d.mavRate.toFixed(0)} kg O₂ per sol`},
+  {k:'Oxygen plants needed',v:plantsNeeded,u:'',d:`At ${d.plant} kg/sol each, ${plantsNeeded*30} kWe of power`},
+  {k:'Programme cost to first return',v:money(totalWithCont),u:'',
+   d:`Development, hardware, flights and ${(P.contingency*100).toFixed(0)}% contingency`},
+  {k:'Cost per crew-sol on surface',v:crewSols?money(totalWithCont/crewSols):'—',u:'',d:`${c} crew × ${SURFACE_STAY_SOLS} sols on the surface`},
+  {k:'First crew return',v:d.base.wi!=null?WINDOWS[d.base.wi].yr:'—',u:'',d:d.base.wi!=null?`Window ${d.base.wi+1} of 10`:'Not achieved inside 10 windows'},
+  {k:'Breathing share of ISRU output',v:(d.crewO2/Math.max(d.mavRate,0.01)*100).toFixed(1),u:'%',d:'The rest is ascent propellant'}
+ ];
+ $('modelTiles').innerHTML=t.map(x=>`<div class="tile"><span class="k">${x.k}</span><div class="v">${x.v}<span class="u">${x.u}</span></div><div class="d">${x.d}</div></div>`).join('');
+}
+function renderMoxie(){
+ const c=crewSize(), mavRate=MAV_O2_T*1000/480;
+ scaleChart($('chMoxie'),{items:[
+  {label:'MOXIE, demonstrated peak',sub:'12 g/hr on Perseverance [1]',v:MOXIE_KG_SOL,c:'--s7'},
+  {label:'Crew breathing demand',sub:`${c} crew at ${O2_PER_CREW_SOL} kg/sol [3]`,v:O2_PER_CREW_SOL*c,c:'--s1'},
+  {label:'One plant in this model',sub:`slider: ${P.isruScale} kg/sol at 30 kWe`,v:P.isruScale,c:'--s3'},
+  {label:'Ascent vehicle fill rate',sub:`${num1(MAV_O2_T)} t of O₂ over 480 sols`,v:mavRate,c:'--s2'}
+ ]});
+}
+function renderTornado(){
+ const seeds=[11,23,37,41,59,71,83,97];
+ const avg=()=>seeds.reduce((a,s)=>a+costToFirstReturn(s).cost,0)/seeds.length;
+ const saved={...P};
+ const base=avg();
+ const items=DRIVERS.filter(d=>d.id!=='contingency').map(d=>{
+  const lo=Math.max(d.min,Math.min(d.max,saved[d.id]*0.65));
+  const hi=Math.max(d.min,Math.min(d.max,saved[d.id]*1.35));
+  P[d.id]=lo; const a=avg();
+  P[d.id]=hi; const b=avg();
+  P[d.id]=saved[d.id];
+  return {label:d.label,lo:a,hi:b,swing:Math.abs(b-a)};
+ }).sort((x,y)=>y.swing-x.swing);
+ Object.assign(P,saved);
+ tornado($('chTornado'),{items,base});
+}
+function renderMC(){
+ const N=600, results=[];
+ for(let i=0;i<N;i++){ const s=runProgram(1000+i*7); results.push({wi:s.firstReturnWi,cost:s.spent/1000*(1+P.contingency)}); }
+ const bins=new Array(WINDOWS.length+1).fill(0);
+ results.forEach(r=>{ bins[r.wi==null?WINDOWS.length:r.wi]++; });
+ const labels=WINDOWS.map(w=>String(w.yr)).concat(['none']);
+ const pcts=bins.map(b=>(b/N*100).toFixed(0));
+ const nz=bins.map((b,i)=>b>0?i:-1).filter(i=>i>=0);
+ const ki=nz.length?Array.from({length:nz[nz.length-1]-nz[0]+1},(_,k)=>nz[0]+k):[0];
+ histogram($('chMC'),{bins:ki.map(i=>bins[i]),labels:ki.map(i=>labels[i]),pcts:ki.map(i=>pcts[i]),
+  xTitle:'Window of first crew return (“none” = not achieved inside 10 windows)'});
+ const done=results.filter(r=>r.wi!=null).map(r=>r.cost).sort((a,b)=>a-b);
+ const q=p=>done.length?done[Math.min(done.length-1,Math.floor(p*done.length))]:0;
+ const succ=done.length/N;
+ const by2043=results.filter(r=>r.wi!=null&&WINDOWS[r.wi].yr<=2043).length/N;
+ $('mcStats').innerHTML=[
+  {k:'Programmes returning crew',v:(succ*100).toFixed(0),u:'%',d:`${done.length} of ${N} inside 10 windows`},
+  {k:'Crew home by 2043',v:(by2043*100).toFixed(0),u:'%',d:'Cumulative probability'},
+  {k:'Median cost (P50)',v:done.length?q(0.5).toFixed(0):'—',u:'B',d:'Successful programmes only'},
+  {k:'P90 cost',v:done.length?q(0.9).toFixed(0):'—',u:'B',d:'One run in ten costs at least this'}
+ ].map(x=>`<div class="tile"><span class="k">${x.k}</span><div class="v">${x.v}<span class="u">${x.u}</span></div><div class="d">${x.d}</div></div>`).join('');
+}
+function renderCostBar(){
+ const seeds=[11,23,37,41,59];
+ let hw=0,fl=0,ov=0,nre=0,n=0;
+ seeds.forEach(sd=>{
+  const rng=mulberry(sd); const s=blankState(); s.charterBaselined=true; s.funds=P.budget*1000*WINDOWS[0].years;
+  while(s.wi<WINDOWS.length){
+   const {mf,landers:nL}=autoManifest(s);
+   const c=windowCost(mf,nL,s.wi); hw+=c.hw; fl+=c.fl; ov+=c.ov; nre+=c.nre;
+   resolveWindow(s,mf,nL,s.crew===0&&crewAuthorised(s),rng);
+   if(s.firstReturnWi!==null)break;
+  }
+  n++;
+ });
+ hw/=n;fl/=n;ov/=n;nre/=n;
+ const cont=(hw+fl+ov+nre)*P.contingency;
+ const parts=[{label:'Architecture development',v:nre,c:'--s1'},{label:'Flight hardware',v:hw,c:'--s2'},
+  {label:'Lander flights',v:fl,c:'--s3'},{label:'Integration & operations',v:ov,c:'--s4'},
+  {label:'Contingency held',v:cont,c:'--s5'}];
+ costBar($('chCost'),{parts,total:parts.reduce((a,p)=>a+p.v,0)});
+}
+function renderModel(){renderModelTiles();renderMoxie();renderTornado();renderMC();renderCostBar();}
+
+/* ============================================================
+   RENDER — dashboard tab
+   ============================================================ */
+function renderCharter(){
+ $('charterCtl').innerHTML=Object.entries(CHARTER).map(([k,c])=>`
+  <div><span class="eyebrow">${c.label}</span>
+   <select id="ch-${k}">${c.opts.map(o=>`<option value="${o[0]}" ${c.val===o[0]?'selected':''}>${o[1]}</option>`).join('')}</select></div>`).join('');
+ Object.keys(CHARTER).forEach(k=>$('ch-'+k).addEventListener('change',e=>{
+   CHARTER[k].val=e.target.value; S.charterBaselined=false; renderAll();
+ }));
+ $('charterState').innerHTML=S.charterBaselined
+  ? `<span class="status pass">Baselined</span> &nbsp;<span style="color:var(--muted)">${CHARTER.endstate.opts.find(o=>o[0]===CHARTER.endstate.val)[1]}, ${crewSize()} crew, ${CHARTER.risk.opts.find(o=>o[0]===CHARTER.risk.val)[1].toLowerCase()}.</span>`
+  : `<span class="status fail">Not baselined</span> &nbsp;<span style="color:var(--muted)">Every downstream gate is held until this is agreed.</span>`;
+ $('charterBtn').disabled=S.charterBaselined;
+}
+$('charterBtn').addEventListener('click',()=>{S.charterBaselined=true;renderAll();});
+
+function renderMonitors(){
+ const h=S.history;
+ const margins=h.map(r=>r.lifeCrit<=0?0:(r.supplyStorm-r.lifeCrit)/r.lifeCrit*100);
+ const reserve=h.map(r=>Math.min(Math.min(r.o2Sols,r.waterSols,r.foodSols),2500));
+ const spares=h.map(r=>r.spares*100);
+ const spend=h.map(r=>r.spend/1000);
+ const last=a=>a.length?a[a.length-1]:0;
+ const m=[
+  {k:'Life-support power margin, storm',v:h.length?last(margins).toFixed(0)+'%':'—',thr:25,vals:margins,c:'--s1',
+   d:`Threshold +25%. ${S.units.fsp} fission unit${S.units.fsp===1?'':'s'} carry the storm case; the propellant chain sheds.`,ok:last(margins)>=25},
+  {k:'Consumables reserve',v:h.length?num(last(reserve))+' sols':'—',thr:780,vals:reserve,c:'--s2',
+   d:'Threshold 780 sols — survives one missed resupply.',ok:last(reserve)>=780},
+  {k:'Spares coverage',v:h.length?last(spares).toFixed(0)+'%':'—',thr:80,vals:spares,c:'--s3',
+   d:'Threshold 80% of projected failures repairable on surface.',ok:last(spares)>=80},
+  {k:'Cumulative expenditure',v:h.length?'$'+last(spend).toFixed(1)+'B':'—',thr:null,vals:spend,c:'--s4',
+   d:`Funding runs at $${P.budget.toFixed(1)}B a year; ${money(Math.max(0,S.funds))} uncommitted.`,ok:S.funds>=0}
+ ];
+ $('monitors').innerHTML=m.map(x=>`<div class="tile">
+   <span class="k">${x.k}</span>
+   <div class="v" style="${x.thr!=null?`color:var(${x.ok?'--good-ink':'--crit-ink'})`:''}">${x.v}</div>
+   ${spark(x.vals,x.c,x.thr)}
+   <div class="d">${x.d}</div></div>`).join('');
+}
+
+function renderGates(){
+ const g=evalGates(S);
+ $('gates').innerHTML=g.map(x=>{
+  const st=x.pass?'pass':(x.met===0?'na':'hold');
+  const lbl=x.pass?'Passed':(x.met===0?'Not started':`${x.met} of ${x.rows.length}`);
+  return `<div class="gate"><hgroup><span class="gid">${x.id}</span>
+   <div><h4>${x.title}</h4><span class="step">${x.step}</span></div>
+   <span class="st"><span class="status ${st}">${lbl}</span></span></hgroup>
+   <ul>${x.rows.map(r=>`<li><span class="mark ${r[2]?'p':'f'}">${r[2]?'✓':'✕'}</span><span class="c">${r[0]}</span><span class="val" style="color:var(${r[2]?'--good-ink':'--crit-ink'})">${r[1]}</span></li>`).join('')}</ul></div>`;
+ }).join('');
+}
+
+function renderRisks(){
+ const u=S.units, res=reserveSols(S), sc=sparesCoverage(S), c=crewSize();
+ const dem=powerDemand(u,S.crew||c), margin=stormMargin(S,S.crew||c);
+ const mavRate=MAV_O2_T*1000/480;
+ const R=[
+  ['R1','Transport & orbital refuelling at Mars-injection scale','Launch integration lead',4,5,
+    'Fixed-price milestone contracts for mature elements; staged funding while the refuelling architecture is unproven. [9]', S.landingsTried>=6],
+  ['R2','Entry, descent & landing of payloads above one tonne','EDL chief engineer',4,5,
+    'Every crew element flies uncrewed first; landing record accumulated before authorisation.', S.landingsOk>=5],
+  ['R3','Life-support closure away from resupply','ECLSS lead',3,5,
+    'Closure demonstrated on the surface before crew; 98% is the ISS ceiling and it is achieved with resupply. [2]', closureOf(u)>=0.95],
+  ['R4','In-situ production at settlement scale','Surface systems lead',4,4,
+    `MOXIE proved the chemistry at 0.30 kg/sol; the ascent vehicle needs ${mavRate.toFixed(0)}. [1]`, S.o2Demonstrated>=mavRate],
+  ['R5','Crew radiation exposure over a conjunction-class mission','Crew health officer',4,5,
+    'Regolith cover on the habitat and a water-wall shelter in transit; without both, the career limit is breached. [5][6]', doseProjection(u)<=DOSE_CAREER_MSV],
+  ['R6','Power continuity through a planet-encircling dust storm','Power systems lead',3,4,
+    'Fission capacity sized to carry life support through a storm without solar, and nominal capacity to cover the plants. [4][7]',
+    margin>=0.25 && powerSupply(u,false)>=dem],
+  ['R7','Missed resupply opportunity','Logistics lead',3,5,
+    'Reserves sized to a full 780-day window; abort thresholds declared in advance. [8]', res.min>=780],
+  ['R8','Funding discontinuity across a 20-year horizon','Programme sponsor',3,4,
+    'Contingency held rather than spent; expansion released only against demonstrated readiness.', S.funds>=0],
+  ['R9','Supplier interface failure at integration','Integration authority',2,3,
+    'Interfaces independently verified; spares stocked on surface before crew arrive.', sc>=0.80]
+ ];
+ const heat=s=>{ const c=s>=15?'--crit':s>=9?'--serious':s>=5?'--warn':'--good';
+   return `<span class="heat" style="background:color-mix(in srgb,var(${c}) 18%,transparent);color:var(${c==='--good'?'--good-ink':c==='--warn'?'--warn-ink':'--crit-ink'})">${s}</span>`;};
+ $('riskTable').innerHTML=`<thead><tr><th>ID</th><th>Risk</th><th>Owner</th><th style="text-align:center">L</th><th style="text-align:center">I</th>
+  <th style="text-align:center">Score</th><th style="text-align:center">Residual</th><th>Mitigation &amp; validation plan</th><th>Status</th></tr></thead><tbody>`+
+  R.map(([id,title,own,l,i,mit,retired])=>{
+   const rl=retired?Math.max(1,l-2):l, sc0=l*i, sc1=rl*i;
+   return `<tr><td class="id">${id}</td><td>${title}</td><td class="own">${own}</td>
+    <td class="sc">${l}</td><td class="sc">${i}</td><td class="sc">${heat(sc0)}</td><td class="sc">${heat(sc1)}</td>
+    <td style="color:var(--ink-2);font-size:12px">${mit}</td>
+    <td><span class="status ${retired?'pass':'hold'}">${retired?'Validated':'Open'}</span></td></tr>`;
+  }).join('')+'</tbody>';
+}
+function renderDash(){renderCharter();renderMonitors();renderGates();renderRisks();}
+
+/* ---------- footnotes ---------- */
+$('refs').innerHTML=REFS.map(r=>`<li><b style="color:var(--ink-2)">${r[0]}.</b> ${r[1]} <a href="${r[2]}" target="_blank" rel="noopener">source</a></li>`).join('');
+
+/* ---------- master ---------- */
+function renderAll(){ renderSim(); renderLog(); renderSimCharts(); renderModel(); renderDash();
+ if(window.__orbitalSync) window.__orbitalSync(); }
+renderSliders();
+bootstrap();
+renderAll();
+window.addEventListener('resize',()=>{clearTimeout(window.__rt);window.__rt=setTimeout(renderSimCharts,160);});
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+"use strict";
+/* ============================================================
+   TRANSFER GEOMETRY VIEW
+   Three.js when the library is available, an SVG projection of the
+   same geometry when it is not. Both draw from the same Kepler and
+   Lambert results, so the picture is identical either way.
+   ============================================================ */
+(function(){
+ const host=document.getElementById('orbView');
+ if(!host) return;
+ let sel = 0;
+ const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim() || '#888';
+ const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+ const SUN='#f0a830';
+
+ /* ---------- shared geometry for the selected window ---------- */
+ function geom(i){
+  const w = TRANSFER_WINDOWS[i];
+  return {
+   w,
+   earthOrbit: orbitPath('earth', w.jd, 256),
+   marsOrbit:  orbitPath('mars',  w.jd, 256),
+   path:       transferPath(i),
+   eDep: planetState('earth', w.jd),
+   mDep: planetState('mars',  w.jd),
+   eArr: planetState('earth', w.jd + w.tof),
+   mArr: planetState('mars',  w.jd + w.tof)
+  };
+ }
+
+ /* ---------- controls ---------- */
+ function renderPicker(){
+  const p=document.getElementById('winPick');
+  p.innerHTML = TRANSFER_WINDOWS.map((w,i)=>
+   `<button type="button" data-w="${i}" aria-pressed="${i===sel}" title="Depart ${fmtDMY(w.jd)}">${w.label}</button>`).join('');
+  p.querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{
+   sel=+b.dataset.w; renderPicker(); draw(); stats();
+  }));
+ }
+ function stats(){
+  const g=geom(sel), w=g.w;
+  const nextGap = w.n<TRANSFER_WINDOWS.length ? Math.round(w.gapDays) : null;
+  const rows=[
+   ['Departs', fmtDMY(w.jd)],
+   ['Arrives', fmtDMY(w.jd+w.tof)],
+   ['Time of flight', `${w.tof} days`],
+   ['Mars lead angle at departure', `${w.phase.toFixed(1)}°`],
+   ['Launch energy C₃', `${w.c3.toFixed(1)} km²/s²`],
+   ['Arrival v∞', `${w.vinfA.toFixed(2)} km/s`],
+   ['Next departure opens', nextGap? `${nextGap} days later` : 'beyond 2050']
+  ];
+  document.getElementById('orbStats').innerHTML =
+   rows.map(([k,v])=>`<dt>${k}</dt><dd>${v}</dd>`).join('');
+  const cheapest = TRANSFER_WINDOWS.reduce((a,b)=>b.c3<a.c3?b:a);
+  const dearest  = TRANSFER_WINDOWS.reduce((a,b)=>b.c3>a.c3?b:a);
+  document.getElementById('orbNote').innerHTML =
+   `Across these ten opportunities the gap averages <b>${GAP_MEAN.toFixed(0)} days — 25.9 months</b>, `+
+   `but it is never the same twice: it runs from ${Math.round(GAP_MIN)} to ${Math.round(GAP_MAX)} days. `+
+   `Launch energy swings just as hard, from <b>${C3_MIN.toFixed(1)}</b> km²/s² in ${cheapest.label} to `+
+   `<b>${C3_MAX.toFixed(1)}</b> in ${dearest.label} — the same lander carries materially less mass in a bad window.`;
+ }
+
+ /* ============================================================
+    THREE.JS PATH
+    ============================================================ */
+ let three=null;
+ function initThree(){
+  const T=window.THREE;
+  const scene=new T.Scene();
+  const camera=new T.OrthographicCamera(-2,2,1.3,-1.3,0.1,200);
+  let aspect=1.6;
+  const renderer=new T.WebGLRenderer({antialias:true,alpha:true});
+  renderer.setPixelRatio(Math.min(devicePixelRatio||1,2));
+  renderer.setClearColor(0x000000,0);
+  host.innerHTML=''; host.appendChild(renderer.domElement);
+  const hint=document.createElement('div'); hint.className='hintline'; hint.textContent='drag to rotate';
+  const sb=document.createElement('div'); sb.className='scalebar'; sb.innerHTML='<i></i><span>1 AU</span>';
+  host.appendChild(hint); host.appendChild(sb);
+
+  scene.add(new T.AmbientLight(0xffffff,0.42));
+  const sunLight=new T.PointLight(0xfff0d8,2.1,0,0); scene.add(sunLight);
+
+  const root=new T.Group(); scene.add(root);
+  let az=-0.62, el=0.56;
+  let allPts=[];
+  const _inv=new T.Matrix4(), _v=new T.Vector3();
+  /* Orthographic: true ellipse shapes, and the frustum is fitted to the actual
+     projected extent, so nothing clips at any view angle or aspect ratio. */
+  function place(){
+   const d=8;
+   camera.position.set(d*Math.cos(el)*Math.sin(az), d*Math.cos(el)*Math.cos(az), d*Math.sin(el));
+   camera.up.set(0,0,1); camera.lookAt(0,0,0);
+   camera.updateMatrixWorld(true);
+   _inv.copy(camera.matrixWorld).invert();
+   let mx=0.4,my=0.4;
+   for(let i=0;i<allPts.length;i++){
+    _v.copy(allPts[i]).applyMatrix4(_inv);
+    if(Math.abs(_v.x)>mx) mx=Math.abs(_v.x);
+    if(Math.abs(_v.y)>my) my=Math.abs(_v.y);
+   }
+   mx*=1.09; my*=1.14;
+   if(mx/my < aspect) mx = my*aspect; else my = mx/aspect;
+   camera.left=-mx; camera.right=mx; camera.top=my; camera.bottom=-my;
+   camera.updateProjectionMatrix();
+  }
+  const V=p=>new T.Vector3(p[0],p[1],p[2]);
+  const disposables=[];
+  function clearRoot(){
+   while(root.children.length){ const c=root.children.pop(); root.remove(c); }
+   disposables.forEach(d=>d.dispose && d.dispose()); disposables.length=0;
+  }
+  function line(points,color,opacity,width){
+   const g=new T.BufferGeometry().setFromPoints(points.map(V));
+   const m=new T.LineBasicMaterial({color:new T.Color(color),transparent:true,opacity});
+   disposables.push(g,m); return new T.Line(g,m);
+  }
+  function ball(p,r,color,ghost){
+   const g=new T.SphereGeometry(r,26,18);
+   const m=ghost ? new T.MeshBasicMaterial({color:new T.Color(color),transparent:true,opacity:0.22})
+                 : new T.MeshStandardMaterial({color:new T.Color(color),roughness:0.85,metalness:0});
+   disposables.push(g,m);
+   const s=new T.Mesh(g,m); s.position.copy(V(p)); return s;
+  }
+  let craft=null, pathPts=[];
+
+  function build(){
+   clearRoot();
+   const g=geom(sel);
+   /* The trajectory takes its own hue so it never blurs into Mars's orbit. */
+   const c1=css('--s1'), c2=css('--s2'), acc=css('--s7'), mut=css('--muted');
+
+   const sg=new T.SphereGeometry(0.075,24,16);
+   const sm=new T.MeshBasicMaterial({color:new T.Color(SUN)});
+   disposables.push(sg,sm); root.add(new T.Mesh(sg,sm));
+   const hg=new T.SphereGeometry(0.15,20,14);
+   const hm=new T.MeshBasicMaterial({color:new T.Color(SUN),transparent:true,opacity:0.16});
+   disposables.push(hg,hm); root.add(new T.Mesh(hg,hm));
+
+   root.add(line(g.earthOrbit,c1,0.55));
+   root.add(line(g.marsOrbit, c2,0.55));
+
+   /* phase angle at departure — the whole reason the cadence exists */
+   root.add(line([[0,0,0],g.eDep],mut,0.42));
+   root.add(line([[0,0,0],g.mDep],mut,0.42));
+   const a1=Math.atan2(g.eDep[1],g.eDep[0]), a2=Math.atan2(g.mDep[1],g.mDep[0]);
+   let d=a2-a1; while(d>Math.PI)d-=2*Math.PI; while(d<-Math.PI)d+=2*Math.PI;
+   const arc=[]; for(let k=0;k<=40;k++){const a=a1+d*k/40; arc.push([0.58*Math.cos(a),0.58*Math.sin(a),0]);}
+   root.add(line(arc,mut,0.7));
+
+   /* transfer arc as a tube so it reads as the emphasised element */
+   pathPts=g.path;
+   if(pathPts.length>2){
+    const curve=new T.CatmullRomCurve3(pathPts.map(V));
+    const tg=new T.TubeGeometry(curve,220,0.0115,8,false);
+    const tm=new T.MeshBasicMaterial({color:new T.Color(acc)});
+    disposables.push(tg,tm); root.add(new T.Mesh(tg,tm));
+   }
+   root.add(ball(g.mDep,0.040,c2,true));
+   root.add(ball(g.eArr,0.048,c1,true));
+   root.add(ball(g.eDep,0.048,c1,false));
+   root.add(ball(g.mArr,0.040,c2,false));
+
+   allPts = g.earthOrbit.concat(g.marsOrbit, pathPts, [g.eDep,g.mDep,g.eArr,g.mArr]).map(V);
+
+   const cg=new T.SphereGeometry(0.024,14,10);
+   const cm=new T.MeshBasicMaterial({color:new T.Color(acc)});
+   disposables.push(cg,cm); craft=new T.Mesh(cg,cm);
+   if(pathPts.length>2){ craft.position.copy(V(pathPts[0])); root.add(craft); }
+  }
+
+  function size(){
+   const w=host.clientWidth||600, h=host.clientHeight||340;
+   renderer.setSize(w,h,false);
+   aspect = w/Math.max(h,1);
+  }
+  let t0=performance.now();
+  function frame(){
+   if(!document.getElementById('panel-sim') || document.getElementById('panel-sim').hidden){ raf=requestAnimationFrame(frame); return; }
+   if(craft && pathPts.length>2){
+    const u = reduced ? 0.5 : ((performance.now()-t0)/11000)%1;
+    craft.position.copy(V(pathPts[Math.min(pathPts.length-1, Math.floor(u*(pathPts.length-1)))]));
+   }
+   place(); renderer.render(scene,camera);
+   raf=requestAnimationFrame(frame);
+  }
+  let raf=null;
+  /* drag to rotate */
+  let dragging=false,lx=0,ly=0;
+  host.addEventListener('pointerdown',e=>{dragging=true;lx=e.clientX;ly=e.clientY;host.classList.add('drag');host.setPointerCapture(e.pointerId);});
+  host.addEventListener('pointermove',e=>{
+   if(!dragging)return;
+   az -= (e.clientX-lx)*0.008;
+   el = Math.max(-1.25, Math.min(1.45, el + (e.clientY-ly)*0.008));
+   lx=e.clientX; ly=e.clientY;
+  });
+  const stop=e=>{dragging=false;host.classList.remove('drag');};
+  host.addEventListener('pointerup',stop); host.addEventListener('pointercancel',stop);
+
+  new ResizeObserver(size).observe(host);
+  three={build,size,start(){size();build();if(!raf)raf=requestAnimationFrame(frame);}};
+  three.start();
+ }
+
+ /* ============================================================
+    SVG FALLBACK — same geometry, orthographic from above
+    ============================================================ */
+ function drawSvg(){
+  const g=geom(sel);
+  const W=640,H=400,cx=W/2,cy=H/2,S=Math.min(W,H)/2/1.78;
+  const X=p=>cx+p[0]*S, Y=p=>cy-p[1]*S;
+  const poly=(pts,color,op,w)=>`<polyline points="${pts.map(p=>X(p).toFixed(1)+','+Y(p).toFixed(1)).join(' ')}" fill="none" stroke="${color}" stroke-opacity="${op}" stroke-width="${w}" stroke-linejoin="round"/>`;
+  const dot=(p,r,color,op)=>`<circle cx="${X(p).toFixed(1)}" cy="${Y(p).toFixed(1)}" r="${r}" fill="${color}" fill-opacity="${op}"/>`;
+  const c1=css('--s1'),c2=css('--s2'),acc=css('--s7'),mut=css('--muted');
+  const a1=Math.atan2(g.eDep[1],g.eDep[0]),a2=Math.atan2(g.mDep[1],g.mDep[0]);
+  let d=a2-a1; while(d>Math.PI)d-=2*Math.PI; while(d<-Math.PI)d+=2*Math.PI;
+  const arc=[]; for(let k=0;k<=40;k++){const a=a1+d*k/40;arc.push([0.58*Math.cos(a),0.58*Math.sin(a),0]);}
+  host.innerHTML=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Earth to Mars transfer, viewed from above the ecliptic">
+   <circle cx="${cx}" cy="${cy}" r="11" fill="${SUN}" fill-opacity="0.18"/>
+   <circle cx="${cx}" cy="${cy}" r="5.5" fill="${SUN}"/>
+   ${poly(g.earthOrbit,c1,0.55,1.2)}${poly(g.marsOrbit,c2,0.55,1.2)}
+   ${poly([[0,0,0],g.eDep],mut,0.42,1)}${poly([[0,0,0],g.mDep],mut,0.42,1)}${poly(arc,mut,0.7,1)}
+   ${poly(g.path,acc,1,2.8)}
+   ${dot(g.mDep,5.5,c2,0.25)}${dot(g.eArr,6.5,c1,0.25)}
+   ${dot(g.eDep,6.5,c1,1)}${dot(g.mArr,5.5,c2,1)}
+  </svg>
+  <div class="scalebar"><i></i><span>1 AU</span></div>`;
+ }
+
+ function draw(){
+  if(window.THREE){ if(!three) initThree(); else three.build(); }
+  else drawSvg();
+ }
+
+ renderPicker(); stats(); draw();
+ /* keep the diagram on the window the simulation is actually at */
+ window.__orbitalSync=function(){
+  const want=Math.min(S.wi,TRANSFER_WINDOWS.length-1);
+  if(want!==sel){ sel=want; renderPicker(); stats(); }
+  draw();
+ };
+ window.__orbitalRefresh=function(){ draw(); stats(); };
+})();
+</script>
+
+</body>
+</html>
