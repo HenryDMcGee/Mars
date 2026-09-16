@@ -4,7 +4,7 @@
   // `wrangler deploy` will create a second, separate Worker.
   "name": "mars",
 
-  "compatibility_date": "2026-09-01",
+  "compatibility_date": "2026-09-15",
 
   // Keeps the free *.workers.dev URL alive. Wrangler turns this off
   // by default when it isn't stated explicitly, which silently takes
