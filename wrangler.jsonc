@@ -13,6 +13,6 @@
 
   // No Worker script at all — Cloudflare serves these files directly.
   "assets": {
-    "directory": "./public"
+    "directory": "./"
   }
 }
